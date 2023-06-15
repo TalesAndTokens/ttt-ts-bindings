@@ -15,5 +15,8 @@
   "bugs": {
     "url": "https://github.com/TalesAndTokens/ttt-ts-bindings/issues"
   },
-  "homepage": "https://github.com/TalesAndTokens/ttt-ts-bindings#readme"
+  "homepage": "https://github.com/TalesAndTokens/ttt-ts-bindings#readme",
+  "dependencies": {
+    "ethers": "^5.7.2"
+  }
 }
