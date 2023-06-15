@@ -5,9 +5,9 @@
 import { Contract, Signer, utils } from "ethers";
 import type { Provider } from "@ethersproject/providers";
 import type {
-  IL1NFT,
-  IL1NFTInterface,
-} from "../../../../contracts/interfaces/token/IL1NFT";
+  IERC721AQueryable,
+  IERC721AQueryableInterface,
+} from "../../../../erc721a/contracts/extensions/IERC721AQueryable";
 
 const _abi = [
   {
@@ -23,6 +23,11 @@ const _abi = [
   {
     inputs: [],
     name: "BalanceQueryForZeroAddress",
+    type: "error",
+  },
+  {
+    inputs: [],
+    name: "InvalidQueryRange",
     type: "error",
   },
   {
@@ -226,12 +231,75 @@ const _abi = [
         type: "uint256",
       },
     ],
-    name: "getApproved",
+    name: "explicitOwnershipOf",
     outputs: [
       {
-        internalType: "address",
-        name: "operator",
-        type: "address",
+        components: [
+          {
+            internalType: "address",
+            name: "addr",
+            type: "address",
+          },
+          {
+            internalType: "uint64",
+            name: "startTimestamp",
+            type: "uint64",
+          },
+          {
+            internalType: "bool",
+            name: "burned",
+            type: "bool",
+          },
+          {
+            internalType: "uint24",
+            name: "extraData",
+            type: "uint24",
+          },
+        ],
+        internalType: "struct IERC721A.TokenOwnership",
+        name: "",
+        type: "tuple",
+      },
+    ],
+    stateMutability: "view",
+    type: "function",
+  },
+  {
+    inputs: [
+      {
+        internalType: "uint256[]",
+        name: "tokenIds",
+        type: "uint256[]",
+      },
+    ],
+    name: "explicitOwnershipsOf",
+    outputs: [
+      {
+        components: [
+          {
+            internalType: "address",
+            name: "addr",
+            type: "address",
+          },
+          {
+            internalType: "uint64",
+            name: "startTimestamp",
+            type: "uint64",
+          },
+          {
+            internalType: "bool",
+            name: "burned",
+            type: "bool",
+          },
+          {
+            internalType: "uint24",
+            name: "extraData",
+            type: "uint24",
+          },
+        ],
+        internalType: "struct IERC721A.TokenOwnership[]",
+        name: "",
+        type: "tuple[]",
       },
     ],
     stateMutability: "view",
@@ -245,31 +313,12 @@ const _abi = [
         type: "uint256",
       },
     ],
-    name: "getOwner",
+    name: "getApproved",
     outputs: [
       {
         internalType: "address",
-        name: "owner",
+        name: "operator",
         type: "address",
-      },
-    ],
-    stateMutability: "view",
-    type: "function",
-  },
-  {
-    inputs: [
-      {
-        internalType: "address",
-        name: "owner",
-        type: "address",
-      },
-    ],
-    name: "getTokens",
-    outputs: [
-      {
-        internalType: "uint256[]",
-        name: "",
-        type: "uint256[]",
       },
     ],
     stateMutability: "view",
@@ -452,6 +501,54 @@ const _abi = [
     type: "function",
   },
   {
+    inputs: [
+      {
+        internalType: "address",
+        name: "owner",
+        type: "address",
+      },
+    ],
+    name: "tokensOfOwner",
+    outputs: [
+      {
+        internalType: "uint256[]",
+        name: "",
+        type: "uint256[]",
+      },
+    ],
+    stateMutability: "view",
+    type: "function",
+  },
+  {
+    inputs: [
+      {
+        internalType: "address",
+        name: "owner",
+        type: "address",
+      },
+      {
+        internalType: "uint256",
+        name: "start",
+        type: "uint256",
+      },
+      {
+        internalType: "uint256",
+        name: "stop",
+        type: "uint256",
+      },
+    ],
+    name: "tokensOfOwnerIn",
+    outputs: [
+      {
+        internalType: "uint256[]",
+        name: "",
+        type: "uint256[]",
+      },
+    ],
+    stateMutability: "view",
+    type: "function",
+  },
+  {
     inputs: [],
     name: "totalSupply",
     outputs: [
@@ -489,12 +586,15 @@ const _abi = [
   },
 ] as const;
 
-export class IL1NFT__factory {
+export class IERC721AQueryable__factory {
   static readonly abi = _abi;
-  static createInterface(): IL1NFTInterface {
-    return new utils.Interface(_abi) as IL1NFTInterface;
+  static createInterface(): IERC721AQueryableInterface {
+    return new utils.Interface(_abi) as IERC721AQueryableInterface;
   }
-  static connect(address: string, signerOrProvider: Signer | Provider): IL1NFT {
-    return new Contract(address, _abi, signerOrProvider) as IL1NFT;
+  static connect(
+    address: string,
+    signerOrProvider: Signer | Provider
+  ): IERC721AQueryable {
+    return new Contract(address, _abi, signerOrProvider) as IERC721AQueryable;
   }
 }

@@ -5,9 +5,9 @@
 import { Contract, Signer, utils } from "ethers";
 import type { Provider } from "@ethersproject/providers";
 import type {
-  IL1NFT,
-  IL1NFTInterface,
-} from "../../../../contracts/interfaces/token/IL1NFT";
+  IERC721A,
+  IERC721AInterface,
+} from "../../../erc721a/contracts/IERC721A";
 
 const _abi = [
   {
@@ -240,44 +240,6 @@ const _abi = [
   {
     inputs: [
       {
-        internalType: "uint256",
-        name: "tokenId",
-        type: "uint256",
-      },
-    ],
-    name: "getOwner",
-    outputs: [
-      {
-        internalType: "address",
-        name: "owner",
-        type: "address",
-      },
-    ],
-    stateMutability: "view",
-    type: "function",
-  },
-  {
-    inputs: [
-      {
-        internalType: "address",
-        name: "owner",
-        type: "address",
-      },
-    ],
-    name: "getTokens",
-    outputs: [
-      {
-        internalType: "uint256[]",
-        name: "",
-        type: "uint256[]",
-      },
-    ],
-    stateMutability: "view",
-    type: "function",
-  },
-  {
-    inputs: [
-      {
         internalType: "address",
         name: "owner",
         type: "address",
@@ -489,12 +451,15 @@ const _abi = [
   },
 ] as const;
 
-export class IL1NFT__factory {
+export class IERC721A__factory {
   static readonly abi = _abi;
-  static createInterface(): IL1NFTInterface {
-    return new utils.Interface(_abi) as IL1NFTInterface;
+  static createInterface(): IERC721AInterface {
+    return new utils.Interface(_abi) as IERC721AInterface;
   }
-  static connect(address: string, signerOrProvider: Signer | Provider): IL1NFT {
-    return new Contract(address, _abi, signerOrProvider) as IL1NFT;
+  static connect(
+    address: string,
+    signerOrProvider: Signer | Provider
+  ): IERC721A {
+    return new Contract(address, _abi, signerOrProvider) as IERC721A;
   }
 }

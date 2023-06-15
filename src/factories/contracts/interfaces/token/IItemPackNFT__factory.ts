@@ -11,6 +11,71 @@ import type {
 
 const _abi = [
   {
+    inputs: [],
+    name: "ApprovalCallerNotOwnerNorApproved",
+    type: "error",
+  },
+  {
+    inputs: [],
+    name: "ApprovalQueryForNonexistentToken",
+    type: "error",
+  },
+  {
+    inputs: [],
+    name: "BalanceQueryForZeroAddress",
+    type: "error",
+  },
+  {
+    inputs: [],
+    name: "MintERC2309QuantityExceedsLimit",
+    type: "error",
+  },
+  {
+    inputs: [],
+    name: "MintToZeroAddress",
+    type: "error",
+  },
+  {
+    inputs: [],
+    name: "MintZeroQuantity",
+    type: "error",
+  },
+  {
+    inputs: [],
+    name: "OwnerQueryForNonexistentToken",
+    type: "error",
+  },
+  {
+    inputs: [],
+    name: "OwnershipNotInitializedForExtraData",
+    type: "error",
+  },
+  {
+    inputs: [],
+    name: "TransferCallerNotOwnerNorApproved",
+    type: "error",
+  },
+  {
+    inputs: [],
+    name: "TransferFromIncorrectOwner",
+    type: "error",
+  },
+  {
+    inputs: [],
+    name: "TransferToNonERC721ReceiverImplementer",
+    type: "error",
+  },
+  {
+    inputs: [],
+    name: "TransferToZeroAddress",
+    type: "error",
+  },
+  {
+    inputs: [],
+    name: "URIQueryForNonexistentToken",
+    type: "error",
+  },
+  {
     anonymous: false,
     inputs: [
       {
@@ -65,6 +130,37 @@ const _abi = [
     inputs: [
       {
         indexed: true,
+        internalType: "uint256",
+        name: "fromTokenId",
+        type: "uint256",
+      },
+      {
+        indexed: false,
+        internalType: "uint256",
+        name: "toTokenId",
+        type: "uint256",
+      },
+      {
+        indexed: true,
+        internalType: "address",
+        name: "from",
+        type: "address",
+      },
+      {
+        indexed: true,
+        internalType: "address",
+        name: "to",
+        type: "address",
+      },
+    ],
+    name: "ConsecutiveTransfer",
+    type: "event",
+  },
+  {
+    anonymous: false,
+    inputs: [
+      {
+        indexed: true,
         internalType: "address",
         name: "from",
         type: "address",
@@ -100,7 +196,7 @@ const _abi = [
     ],
     name: "approve",
     outputs: [],
-    stateMutability: "nonpayable",
+    stateMutability: "payable",
     type: "function",
   },
   {
@@ -234,6 +330,19 @@ const _abi = [
     type: "function",
   },
   {
+    inputs: [],
+    name: "name",
+    outputs: [
+      {
+        internalType: "string",
+        name: "",
+        type: "string",
+      },
+    ],
+    stateMutability: "view",
+    type: "function",
+  },
+  {
     inputs: [
       {
         internalType: "uint256",
@@ -272,7 +381,7 @@ const _abi = [
     ],
     name: "safeTransferFrom",
     outputs: [],
-    stateMutability: "nonpayable",
+    stateMutability: "payable",
     type: "function",
   },
   {
@@ -300,7 +409,7 @@ const _abi = [
     ],
     name: "safeTransferFrom",
     outputs: [],
-    stateMutability: "nonpayable",
+    stateMutability: "payable",
     type: "function",
   },
   {
@@ -354,6 +463,51 @@ const _abi = [
     type: "function",
   },
   {
+    inputs: [],
+    name: "symbol",
+    outputs: [
+      {
+        internalType: "string",
+        name: "",
+        type: "string",
+      },
+    ],
+    stateMutability: "view",
+    type: "function",
+  },
+  {
+    inputs: [
+      {
+        internalType: "uint256",
+        name: "tokenId",
+        type: "uint256",
+      },
+    ],
+    name: "tokenURI",
+    outputs: [
+      {
+        internalType: "string",
+        name: "",
+        type: "string",
+      },
+    ],
+    stateMutability: "view",
+    type: "function",
+  },
+  {
+    inputs: [],
+    name: "totalSupply",
+    outputs: [
+      {
+        internalType: "uint256",
+        name: "",
+        type: "uint256",
+      },
+    ],
+    stateMutability: "view",
+    type: "function",
+  },
+  {
     inputs: [
       {
         internalType: "address",
@@ -373,7 +527,7 @@ const _abi = [
     ],
     name: "transferFrom",
     outputs: [],
-    stateMutability: "nonpayable",
+    stateMutability: "payable",
     type: "function",
   },
 ] as const;

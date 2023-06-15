@@ -28,25 +28,45 @@ import type {
   PromiseOrValue,
 } from "../../../common";
 
-export interface IItemPackNFTInterface extends utils.Interface {
+export declare namespace IERC721A {
+  export type TokenOwnershipStruct = {
+    addr: PromiseOrValue<string>;
+    startTimestamp: PromiseOrValue<BigNumberish>;
+    burned: PromiseOrValue<boolean>;
+    extraData: PromiseOrValue<BigNumberish>;
+  };
+
+  export type TokenOwnershipStructOutput = [
+    string,
+    BigNumber,
+    boolean,
+    number
+  ] & {
+    addr: string;
+    startTimestamp: BigNumber;
+    burned: boolean;
+    extraData: number;
+  };
+}
+
+export interface IERC721AQueryableInterface extends utils.Interface {
   functions: {
     "approve(address,uint256)": FunctionFragment;
     "balanceOf(address)": FunctionFragment;
-    "burn(uint256)": FunctionFragment;
+    "explicitOwnershipOf(uint256)": FunctionFragment;
+    "explicitOwnershipsOf(uint256[])": FunctionFragment;
     "getApproved(uint256)": FunctionFragment;
-    "getEnabled()": FunctionFragment;
-    "getTokens(address)": FunctionFragment;
     "isApprovedForAll(address,address)": FunctionFragment;
-    "mint(address,uint256,uint256)": FunctionFragment;
     "name()": FunctionFragment;
     "ownerOf(uint256)": FunctionFragment;
     "safeTransferFrom(address,address,uint256)": FunctionFragment;
     "safeTransferFrom(address,address,uint256,bytes)": FunctionFragment;
     "setApprovalForAll(address,bool)": FunctionFragment;
-    "setEnabled(bool)": FunctionFragment;
     "supportsInterface(bytes4)": FunctionFragment;
     "symbol()": FunctionFragment;
     "tokenURI(uint256)": FunctionFragment;
+    "tokensOfOwner(address)": FunctionFragment;
+    "tokensOfOwnerIn(address,uint256,uint256)": FunctionFragment;
     "totalSupply()": FunctionFragment;
     "transferFrom(address,address,uint256)": FunctionFragment;
   };
@@ -55,21 +75,20 @@ export interface IItemPackNFTInterface extends utils.Interface {
     nameOrSignatureOrTopic:
       | "approve"
       | "balanceOf"
-      | "burn"
+      | "explicitOwnershipOf"
+      | "explicitOwnershipsOf"
       | "getApproved"
-      | "getEnabled"
-      | "getTokens"
       | "isApprovedForAll"
-      | "mint"
       | "name"
       | "ownerOf"
       | "safeTransferFrom(address,address,uint256)"
       | "safeTransferFrom(address,address,uint256,bytes)"
       | "setApprovalForAll"
-      | "setEnabled"
       | "supportsInterface"
       | "symbol"
       | "tokenURI"
+      | "tokensOfOwner"
+      | "tokensOfOwnerIn"
       | "totalSupply"
       | "transferFrom"
   ): FunctionFragment;
@@ -83,32 +102,20 @@ export interface IItemPackNFTInterface extends utils.Interface {
     values: [PromiseOrValue<string>]
   ): string;
   encodeFunctionData(
-    functionFragment: "burn",
+    functionFragment: "explicitOwnershipOf",
     values: [PromiseOrValue<BigNumberish>]
+  ): string;
+  encodeFunctionData(
+    functionFragment: "explicitOwnershipsOf",
+    values: [PromiseOrValue<BigNumberish>[]]
   ): string;
   encodeFunctionData(
     functionFragment: "getApproved",
     values: [PromiseOrValue<BigNumberish>]
   ): string;
   encodeFunctionData(
-    functionFragment: "getEnabled",
-    values?: undefined
-  ): string;
-  encodeFunctionData(
-    functionFragment: "getTokens",
-    values: [PromiseOrValue<string>]
-  ): string;
-  encodeFunctionData(
     functionFragment: "isApprovedForAll",
     values: [PromiseOrValue<string>, PromiseOrValue<string>]
-  ): string;
-  encodeFunctionData(
-    functionFragment: "mint",
-    values: [
-      PromiseOrValue<string>,
-      PromiseOrValue<BigNumberish>,
-      PromiseOrValue<BigNumberish>
-    ]
   ): string;
   encodeFunctionData(functionFragment: "name", values?: undefined): string;
   encodeFunctionData(
@@ -137,10 +144,6 @@ export interface IItemPackNFTInterface extends utils.Interface {
     values: [PromiseOrValue<string>, PromiseOrValue<boolean>]
   ): string;
   encodeFunctionData(
-    functionFragment: "setEnabled",
-    values: [PromiseOrValue<boolean>]
-  ): string;
-  encodeFunctionData(
     functionFragment: "supportsInterface",
     values: [PromiseOrValue<BytesLike>]
   ): string;
@@ -148,6 +151,18 @@ export interface IItemPackNFTInterface extends utils.Interface {
   encodeFunctionData(
     functionFragment: "tokenURI",
     values: [PromiseOrValue<BigNumberish>]
+  ): string;
+  encodeFunctionData(
+    functionFragment: "tokensOfOwner",
+    values: [PromiseOrValue<string>]
+  ): string;
+  encodeFunctionData(
+    functionFragment: "tokensOfOwnerIn",
+    values: [
+      PromiseOrValue<string>,
+      PromiseOrValue<BigNumberish>,
+      PromiseOrValue<BigNumberish>
+    ]
   ): string;
   encodeFunctionData(
     functionFragment: "totalSupply",
@@ -164,18 +179,22 @@ export interface IItemPackNFTInterface extends utils.Interface {
 
   decodeFunctionResult(functionFragment: "approve", data: BytesLike): Result;
   decodeFunctionResult(functionFragment: "balanceOf", data: BytesLike): Result;
-  decodeFunctionResult(functionFragment: "burn", data: BytesLike): Result;
+  decodeFunctionResult(
+    functionFragment: "explicitOwnershipOf",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(
+    functionFragment: "explicitOwnershipsOf",
+    data: BytesLike
+  ): Result;
   decodeFunctionResult(
     functionFragment: "getApproved",
     data: BytesLike
   ): Result;
-  decodeFunctionResult(functionFragment: "getEnabled", data: BytesLike): Result;
-  decodeFunctionResult(functionFragment: "getTokens", data: BytesLike): Result;
   decodeFunctionResult(
     functionFragment: "isApprovedForAll",
     data: BytesLike
   ): Result;
-  decodeFunctionResult(functionFragment: "mint", data: BytesLike): Result;
   decodeFunctionResult(functionFragment: "name", data: BytesLike): Result;
   decodeFunctionResult(functionFragment: "ownerOf", data: BytesLike): Result;
   decodeFunctionResult(
@@ -190,13 +209,20 @@ export interface IItemPackNFTInterface extends utils.Interface {
     functionFragment: "setApprovalForAll",
     data: BytesLike
   ): Result;
-  decodeFunctionResult(functionFragment: "setEnabled", data: BytesLike): Result;
   decodeFunctionResult(
     functionFragment: "supportsInterface",
     data: BytesLike
   ): Result;
   decodeFunctionResult(functionFragment: "symbol", data: BytesLike): Result;
   decodeFunctionResult(functionFragment: "tokenURI", data: BytesLike): Result;
+  decodeFunctionResult(
+    functionFragment: "tokensOfOwner",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(
+    functionFragment: "tokensOfOwnerIn",
+    data: BytesLike
+  ): Result;
   decodeFunctionResult(
     functionFragment: "totalSupply",
     data: BytesLike
@@ -269,12 +295,12 @@ export type TransferEvent = TypedEvent<
 
 export type TransferEventFilter = TypedEventFilter<TransferEvent>;
 
-export interface IItemPackNFT extends BaseContract {
+export interface IERC721AQueryable extends BaseContract {
   connect(signerOrProvider: Signer | Provider | string): this;
   attach(addressOrName: string): this;
   deployed(): Promise<this>;
 
-  interface: IItemPackNFTInterface;
+  interface: IERC721AQueryableInterface;
 
   queryFilter<TEvent extends TypedEvent>(
     event: TypedEventFilter<TEvent>,
@@ -307,35 +333,26 @@ export interface IItemPackNFT extends BaseContract {
       overrides?: CallOverrides
     ): Promise<[BigNumber] & { balance: BigNumber }>;
 
-    burn(
+    explicitOwnershipOf(
       tokenId: PromiseOrValue<BigNumberish>,
-      overrides?: Overrides & { from?: PromiseOrValue<string> }
-    ): Promise<ContractTransaction>;
+      overrides?: CallOverrides
+    ): Promise<[IERC721A.TokenOwnershipStructOutput]>;
+
+    explicitOwnershipsOf(
+      tokenIds: PromiseOrValue<BigNumberish>[],
+      overrides?: CallOverrides
+    ): Promise<[IERC721A.TokenOwnershipStructOutput[]]>;
 
     getApproved(
       tokenId: PromiseOrValue<BigNumberish>,
       overrides?: CallOverrides
     ): Promise<[string] & { operator: string }>;
 
-    getEnabled(overrides?: CallOverrides): Promise<[boolean]>;
-
-    getTokens(
-      owner: PromiseOrValue<string>,
-      overrides?: CallOverrides
-    ): Promise<[BigNumber[]]>;
-
     isApprovedForAll(
       owner: PromiseOrValue<string>,
       operator: PromiseOrValue<string>,
       overrides?: CallOverrides
     ): Promise<[boolean]>;
-
-    mint(
-      to: PromiseOrValue<string>,
-      quantity: PromiseOrValue<BigNumberish>,
-      itemPackDefinitionId: PromiseOrValue<BigNumberish>,
-      overrides?: Overrides & { from?: PromiseOrValue<string> }
-    ): Promise<ContractTransaction>;
 
     name(overrides?: CallOverrides): Promise<[string]>;
 
@@ -365,11 +382,6 @@ export interface IItemPackNFT extends BaseContract {
       overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<ContractTransaction>;
 
-    setEnabled(
-      enabled: PromiseOrValue<boolean>,
-      overrides?: Overrides & { from?: PromiseOrValue<string> }
-    ): Promise<ContractTransaction>;
-
     supportsInterface(
       interfaceId: PromiseOrValue<BytesLike>,
       overrides?: CallOverrides
@@ -381,6 +393,18 @@ export interface IItemPackNFT extends BaseContract {
       tokenId: PromiseOrValue<BigNumberish>,
       overrides?: CallOverrides
     ): Promise<[string]>;
+
+    tokensOfOwner(
+      owner: PromiseOrValue<string>,
+      overrides?: CallOverrides
+    ): Promise<[BigNumber[]]>;
+
+    tokensOfOwnerIn(
+      owner: PromiseOrValue<string>,
+      start: PromiseOrValue<BigNumberish>,
+      stop: PromiseOrValue<BigNumberish>,
+      overrides?: CallOverrides
+    ): Promise<[BigNumber[]]>;
 
     totalSupply(overrides?: CallOverrides): Promise<[BigNumber]>;
 
@@ -403,35 +427,26 @@ export interface IItemPackNFT extends BaseContract {
     overrides?: CallOverrides
   ): Promise<BigNumber>;
 
-  burn(
+  explicitOwnershipOf(
     tokenId: PromiseOrValue<BigNumberish>,
-    overrides?: Overrides & { from?: PromiseOrValue<string> }
-  ): Promise<ContractTransaction>;
+    overrides?: CallOverrides
+  ): Promise<IERC721A.TokenOwnershipStructOutput>;
+
+  explicitOwnershipsOf(
+    tokenIds: PromiseOrValue<BigNumberish>[],
+    overrides?: CallOverrides
+  ): Promise<IERC721A.TokenOwnershipStructOutput[]>;
 
   getApproved(
     tokenId: PromiseOrValue<BigNumberish>,
     overrides?: CallOverrides
   ): Promise<string>;
 
-  getEnabled(overrides?: CallOverrides): Promise<boolean>;
-
-  getTokens(
-    owner: PromiseOrValue<string>,
-    overrides?: CallOverrides
-  ): Promise<BigNumber[]>;
-
   isApprovedForAll(
     owner: PromiseOrValue<string>,
     operator: PromiseOrValue<string>,
     overrides?: CallOverrides
   ): Promise<boolean>;
-
-  mint(
-    to: PromiseOrValue<string>,
-    quantity: PromiseOrValue<BigNumberish>,
-    itemPackDefinitionId: PromiseOrValue<BigNumberish>,
-    overrides?: Overrides & { from?: PromiseOrValue<string> }
-  ): Promise<ContractTransaction>;
 
   name(overrides?: CallOverrides): Promise<string>;
 
@@ -461,11 +476,6 @@ export interface IItemPackNFT extends BaseContract {
     overrides?: Overrides & { from?: PromiseOrValue<string> }
   ): Promise<ContractTransaction>;
 
-  setEnabled(
-    enabled: PromiseOrValue<boolean>,
-    overrides?: Overrides & { from?: PromiseOrValue<string> }
-  ): Promise<ContractTransaction>;
-
   supportsInterface(
     interfaceId: PromiseOrValue<BytesLike>,
     overrides?: CallOverrides
@@ -477,6 +487,18 @@ export interface IItemPackNFT extends BaseContract {
     tokenId: PromiseOrValue<BigNumberish>,
     overrides?: CallOverrides
   ): Promise<string>;
+
+  tokensOfOwner(
+    owner: PromiseOrValue<string>,
+    overrides?: CallOverrides
+  ): Promise<BigNumber[]>;
+
+  tokensOfOwnerIn(
+    owner: PromiseOrValue<string>,
+    start: PromiseOrValue<BigNumberish>,
+    stop: PromiseOrValue<BigNumberish>,
+    overrides?: CallOverrides
+  ): Promise<BigNumber[]>;
 
   totalSupply(overrides?: CallOverrides): Promise<BigNumber>;
 
@@ -499,35 +521,26 @@ export interface IItemPackNFT extends BaseContract {
       overrides?: CallOverrides
     ): Promise<BigNumber>;
 
-    burn(
+    explicitOwnershipOf(
       tokenId: PromiseOrValue<BigNumberish>,
       overrides?: CallOverrides
-    ): Promise<void>;
+    ): Promise<IERC721A.TokenOwnershipStructOutput>;
+
+    explicitOwnershipsOf(
+      tokenIds: PromiseOrValue<BigNumberish>[],
+      overrides?: CallOverrides
+    ): Promise<IERC721A.TokenOwnershipStructOutput[]>;
 
     getApproved(
       tokenId: PromiseOrValue<BigNumberish>,
       overrides?: CallOverrides
     ): Promise<string>;
 
-    getEnabled(overrides?: CallOverrides): Promise<boolean>;
-
-    getTokens(
-      owner: PromiseOrValue<string>,
-      overrides?: CallOverrides
-    ): Promise<BigNumber[]>;
-
     isApprovedForAll(
       owner: PromiseOrValue<string>,
       operator: PromiseOrValue<string>,
       overrides?: CallOverrides
     ): Promise<boolean>;
-
-    mint(
-      to: PromiseOrValue<string>,
-      quantity: PromiseOrValue<BigNumberish>,
-      itemPackDefinitionId: PromiseOrValue<BigNumberish>,
-      overrides?: CallOverrides
-    ): Promise<void>;
 
     name(overrides?: CallOverrides): Promise<string>;
 
@@ -557,11 +570,6 @@ export interface IItemPackNFT extends BaseContract {
       overrides?: CallOverrides
     ): Promise<void>;
 
-    setEnabled(
-      enabled: PromiseOrValue<boolean>,
-      overrides?: CallOverrides
-    ): Promise<void>;
-
     supportsInterface(
       interfaceId: PromiseOrValue<BytesLike>,
       overrides?: CallOverrides
@@ -573,6 +581,18 @@ export interface IItemPackNFT extends BaseContract {
       tokenId: PromiseOrValue<BigNumberish>,
       overrides?: CallOverrides
     ): Promise<string>;
+
+    tokensOfOwner(
+      owner: PromiseOrValue<string>,
+      overrides?: CallOverrides
+    ): Promise<BigNumber[]>;
+
+    tokensOfOwnerIn(
+      owner: PromiseOrValue<string>,
+      start: PromiseOrValue<BigNumberish>,
+      stop: PromiseOrValue<BigNumberish>,
+      overrides?: CallOverrides
+    ): Promise<BigNumber[]>;
 
     totalSupply(overrides?: CallOverrides): Promise<BigNumber>;
 
@@ -644,9 +664,14 @@ export interface IItemPackNFT extends BaseContract {
       overrides?: CallOverrides
     ): Promise<BigNumber>;
 
-    burn(
+    explicitOwnershipOf(
       tokenId: PromiseOrValue<BigNumberish>,
-      overrides?: Overrides & { from?: PromiseOrValue<string> }
+      overrides?: CallOverrides
+    ): Promise<BigNumber>;
+
+    explicitOwnershipsOf(
+      tokenIds: PromiseOrValue<BigNumberish>[],
+      overrides?: CallOverrides
     ): Promise<BigNumber>;
 
     getApproved(
@@ -654,24 +679,10 @@ export interface IItemPackNFT extends BaseContract {
       overrides?: CallOverrides
     ): Promise<BigNumber>;
 
-    getEnabled(overrides?: CallOverrides): Promise<BigNumber>;
-
-    getTokens(
-      owner: PromiseOrValue<string>,
-      overrides?: CallOverrides
-    ): Promise<BigNumber>;
-
     isApprovedForAll(
       owner: PromiseOrValue<string>,
       operator: PromiseOrValue<string>,
       overrides?: CallOverrides
-    ): Promise<BigNumber>;
-
-    mint(
-      to: PromiseOrValue<string>,
-      quantity: PromiseOrValue<BigNumberish>,
-      itemPackDefinitionId: PromiseOrValue<BigNumberish>,
-      overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<BigNumber>;
 
     name(overrides?: CallOverrides): Promise<BigNumber>;
@@ -702,11 +713,6 @@ export interface IItemPackNFT extends BaseContract {
       overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<BigNumber>;
 
-    setEnabled(
-      enabled: PromiseOrValue<boolean>,
-      overrides?: Overrides & { from?: PromiseOrValue<string> }
-    ): Promise<BigNumber>;
-
     supportsInterface(
       interfaceId: PromiseOrValue<BytesLike>,
       overrides?: CallOverrides
@@ -716,6 +722,18 @@ export interface IItemPackNFT extends BaseContract {
 
     tokenURI(
       tokenId: PromiseOrValue<BigNumberish>,
+      overrides?: CallOverrides
+    ): Promise<BigNumber>;
+
+    tokensOfOwner(
+      owner: PromiseOrValue<string>,
+      overrides?: CallOverrides
+    ): Promise<BigNumber>;
+
+    tokensOfOwnerIn(
+      owner: PromiseOrValue<string>,
+      start: PromiseOrValue<BigNumberish>,
+      stop: PromiseOrValue<BigNumberish>,
       overrides?: CallOverrides
     ): Promise<BigNumber>;
 
@@ -741,9 +759,14 @@ export interface IItemPackNFT extends BaseContract {
       overrides?: CallOverrides
     ): Promise<PopulatedTransaction>;
 
-    burn(
+    explicitOwnershipOf(
       tokenId: PromiseOrValue<BigNumberish>,
-      overrides?: Overrides & { from?: PromiseOrValue<string> }
+      overrides?: CallOverrides
+    ): Promise<PopulatedTransaction>;
+
+    explicitOwnershipsOf(
+      tokenIds: PromiseOrValue<BigNumberish>[],
+      overrides?: CallOverrides
     ): Promise<PopulatedTransaction>;
 
     getApproved(
@@ -751,24 +774,10 @@ export interface IItemPackNFT extends BaseContract {
       overrides?: CallOverrides
     ): Promise<PopulatedTransaction>;
 
-    getEnabled(overrides?: CallOverrides): Promise<PopulatedTransaction>;
-
-    getTokens(
-      owner: PromiseOrValue<string>,
-      overrides?: CallOverrides
-    ): Promise<PopulatedTransaction>;
-
     isApprovedForAll(
       owner: PromiseOrValue<string>,
       operator: PromiseOrValue<string>,
       overrides?: CallOverrides
-    ): Promise<PopulatedTransaction>;
-
-    mint(
-      to: PromiseOrValue<string>,
-      quantity: PromiseOrValue<BigNumberish>,
-      itemPackDefinitionId: PromiseOrValue<BigNumberish>,
-      overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<PopulatedTransaction>;
 
     name(overrides?: CallOverrides): Promise<PopulatedTransaction>;
@@ -799,11 +808,6 @@ export interface IItemPackNFT extends BaseContract {
       overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<PopulatedTransaction>;
 
-    setEnabled(
-      enabled: PromiseOrValue<boolean>,
-      overrides?: Overrides & { from?: PromiseOrValue<string> }
-    ): Promise<PopulatedTransaction>;
-
     supportsInterface(
       interfaceId: PromiseOrValue<BytesLike>,
       overrides?: CallOverrides
@@ -813,6 +817,18 @@ export interface IItemPackNFT extends BaseContract {
 
     tokenURI(
       tokenId: PromiseOrValue<BigNumberish>,
+      overrides?: CallOverrides
+    ): Promise<PopulatedTransaction>;
+
+    tokensOfOwner(
+      owner: PromiseOrValue<string>,
+      overrides?: CallOverrides
+    ): Promise<PopulatedTransaction>;
+
+    tokensOfOwnerIn(
+      owner: PromiseOrValue<string>,
+      start: PromiseOrValue<BigNumberish>,
+      stop: PromiseOrValue<BigNumberish>,
       overrides?: CallOverrides
     ): Promise<PopulatedTransaction>;
 

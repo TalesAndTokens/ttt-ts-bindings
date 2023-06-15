@@ -80,6 +80,14 @@ declare module "hardhat/types/runtime" {
       name: "IL1NFT",
       signerOrOptions?: ethers.Signer | FactoryOptions
     ): Promise<Contracts.IL1NFT__factory>;
+    getContractFactory(
+      name: "IERC721AQueryable",
+      signerOrOptions?: ethers.Signer | FactoryOptions
+    ): Promise<Contracts.IERC721AQueryable__factory>;
+    getContractFactory(
+      name: "IERC721A",
+      signerOrOptions?: ethers.Signer | FactoryOptions
+    ): Promise<Contracts.IERC721A__factory>;
 
     getContractAt(
       name: "IERC721",
@@ -166,6 +174,16 @@ declare module "hardhat/types/runtime" {
       address: string,
       signer?: ethers.Signer
     ): Promise<Contracts.IL1NFT>;
+    getContractAt(
+      name: "IERC721AQueryable",
+      address: string,
+      signer?: ethers.Signer
+    ): Promise<Contracts.IERC721AQueryable>;
+    getContractAt(
+      name: "IERC721A",
+      address: string,
+      signer?: ethers.Signer
+    ): Promise<Contracts.IERC721A>;
 
     // default types
     getContractFactory(
