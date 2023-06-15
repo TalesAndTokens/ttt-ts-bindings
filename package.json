@@ -1,0 +1,19 @@
+{
+  "name": "ttt-ts-bindings",
+  "version": "0.1.0",
+  "description": "TypeScript bindings for Tales and Tokens smart contracts. ",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/TalesAndTokens/ttt-ts-bindings.git"
+  },
+  "author": "Tales & Tokens, Inc.",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/TalesAndTokens/ttt-ts-bindings/issues"
+  },
+  "homepage": "https://github.com/TalesAndTokens/ttt-ts-bindings#readme"
+}
