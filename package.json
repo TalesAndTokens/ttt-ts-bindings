@@ -27,7 +27,7 @@
   },
   "homepage": "https://github.com/TalesAndTokens/ttt-ts-bindings#readme",
   "dependencies": {
-    "ethers": "^5.7.2"
+    "ethers": "^6.6.2"
   },
   "type": "module",
   "keywords": [
