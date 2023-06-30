@@ -2,8 +2,7 @@
 /* tslint:disable */
 /* eslint-disable */
 
-import { Contract, Signer, utils } from "ethers";
-import type { Provider } from "@ethersproject/providers";
+import { Contract, Interface, type ContractRunner } from "ethers";
 import type {
   ICharacterReveal,
   ICharacterRevealInterface,
@@ -94,12 +93,12 @@ const _abi = [
 export class ICharacterReveal__factory {
   static readonly abi = _abi;
   static createInterface(): ICharacterRevealInterface {
-    return new utils.Interface(_abi) as ICharacterRevealInterface;
+    return new Interface(_abi) as ICharacterRevealInterface;
   }
   static connect(
     address: string,
-    signerOrProvider: Signer | Provider
+    runner?: ContractRunner | null
   ): ICharacterReveal {
-    return new Contract(address, _abi, signerOrProvider) as ICharacterReveal;
+    return new Contract(address, _abi, runner) as unknown as ICharacterReveal;
   }
 }

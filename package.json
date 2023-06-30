@@ -1,6 +1,6 @@
 {
   "name": "ttt-ts-bindings",
-  "version": "0.0.5",
+  "version": "0.1.0",
   "description": "TypeScript bindings for Tales and Tokens smart contracts. ",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
@@ -27,7 +27,7 @@
   },
   "homepage": "https://github.com/TalesAndTokens/ttt-ts-bindings#readme",
   "dependencies": {
-    "ethers": "^5.7.2"
+    "ethers": "^6.6.2"
   },
   "type": "module",
   "keywords": [

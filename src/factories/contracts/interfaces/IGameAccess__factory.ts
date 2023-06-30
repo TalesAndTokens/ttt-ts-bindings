@@ -2,8 +2,7 @@
 /* tslint:disable */
 /* eslint-disable */
 
-import { Contract, Signer, utils } from "ethers";
-import type { Provider } from "@ethersproject/providers";
+import { Contract, Interface, type ContractRunner } from "ethers";
 import type {
   IGameAccess,
   IGameAccessInterface,
@@ -141,12 +140,9 @@ const _abi = [
 export class IGameAccess__factory {
   static readonly abi = _abi;
   static createInterface(): IGameAccessInterface {
-    return new utils.Interface(_abi) as IGameAccessInterface;
+    return new Interface(_abi) as IGameAccessInterface;
   }
-  static connect(
-    address: string,
-    signerOrProvider: Signer | Provider
-  ): IGameAccess {
-    return new Contract(address, _abi, signerOrProvider) as IGameAccess;
+  static connect(address: string, runner?: ContractRunner | null): IGameAccess {
+    return new Contract(address, _abi, runner) as unknown as IGameAccess;
   }
 }

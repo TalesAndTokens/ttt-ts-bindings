@@ -2,8 +2,7 @@
 /* tslint:disable */
 /* eslint-disable */
 
-import { Contract, Signer, utils } from "ethers";
-import type { Provider } from "@ethersproject/providers";
+import { Contract, Interface, type ContractRunner } from "ethers";
 import type {
   ICharacterStorage,
   ICharacterStorageInterface,
@@ -44,12 +43,12 @@ const _abi = [
 export class ICharacterStorage__factory {
   static readonly abi = _abi;
   static createInterface(): ICharacterStorageInterface {
-    return new utils.Interface(_abi) as ICharacterStorageInterface;
+    return new Interface(_abi) as ICharacterStorageInterface;
   }
   static connect(
     address: string,
-    signerOrProvider: Signer | Provider
+    runner?: ContractRunner | null
   ): ICharacterStorage {
-    return new Contract(address, _abi, signerOrProvider) as ICharacterStorage;
+    return new Contract(address, _abi, runner) as unknown as ICharacterStorage;
   }
 }

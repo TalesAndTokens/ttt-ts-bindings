@@ -3,34 +3,26 @@
 /* eslint-disable */
 import type {
   BaseContract,
-  BigNumber,
   BytesLike,
-  CallOverrides,
-  ContractTransaction,
-  Overrides,
-  PopulatedTransaction,
-  Signer,
-  utils,
+  FunctionFragment,
+  Result,
+  Interface,
+  AddressLike,
+  ContractRunner,
+  ContractMethod,
+  Listener,
 } from "ethers";
-import type { FunctionFragment, Result } from "@ethersproject/abi";
-import type { Listener, Provider } from "@ethersproject/providers";
 import type {
-  TypedEventFilter,
-  TypedEvent,
+  TypedContractEvent,
+  TypedDeferredTopicFilter,
+  TypedEventLog,
   TypedListener,
-  OnEvent,
-  PromiseOrValue,
+  TypedContractMethod,
 } from "../../common";
 
-export interface IWorldInterface extends utils.Interface {
-  functions: {
-    "getItemPackNFTs()": FunctionFragment;
-    "getL1NFT()": FunctionFragment;
-    "setGame(address)": FunctionFragment;
-  };
-
+export interface IWorldInterface extends Interface {
   getFunction(
-    nameOrSignatureOrTopic: "getItemPackNFTs" | "getL1NFT" | "setGame"
+    nameOrSignature: "getItemPackNFTs" | "getL1NFT" | "setGame"
   ): FunctionFragment;
 
   encodeFunctionData(
@@ -40,7 +32,7 @@ export interface IWorldInterface extends utils.Interface {
   encodeFunctionData(functionFragment: "getL1NFT", values?: undefined): string;
   encodeFunctionData(
     functionFragment: "setGame",
-    values: [PromiseOrValue<string>]
+    values: [AddressLike]
   ): string;
 
   decodeFunctionResult(
@@ -49,88 +41,70 @@ export interface IWorldInterface extends utils.Interface {
   ): Result;
   decodeFunctionResult(functionFragment: "getL1NFT", data: BytesLike): Result;
   decodeFunctionResult(functionFragment: "setGame", data: BytesLike): Result;
-
-  events: {};
 }
 
 export interface IWorld extends BaseContract {
-  connect(signerOrProvider: Signer | Provider | string): this;
-  attach(addressOrName: string): this;
-  deployed(): Promise<this>;
+  connect(runner?: ContractRunner | null): IWorld;
+  waitForDeployment(): Promise<this>;
 
   interface: IWorldInterface;
 
-  queryFilter<TEvent extends TypedEvent>(
-    event: TypedEventFilter<TEvent>,
+  queryFilter<TCEvent extends TypedContractEvent>(
+    event: TCEvent,
     fromBlockOrBlockhash?: string | number | undefined,
     toBlock?: string | number | undefined
-  ): Promise<Array<TEvent>>;
+  ): Promise<Array<TypedEventLog<TCEvent>>>;
+  queryFilter<TCEvent extends TypedContractEvent>(
+    filter: TypedDeferredTopicFilter<TCEvent>,
+    fromBlockOrBlockhash?: string | number | undefined,
+    toBlock?: string | number | undefined
+  ): Promise<Array<TypedEventLog<TCEvent>>>;
 
-  listeners<TEvent extends TypedEvent>(
-    eventFilter?: TypedEventFilter<TEvent>
-  ): Array<TypedListener<TEvent>>;
-  listeners(eventName?: string): Array<Listener>;
-  removeAllListeners<TEvent extends TypedEvent>(
-    eventFilter: TypedEventFilter<TEvent>
-  ): this;
-  removeAllListeners(eventName?: string): this;
-  off: OnEvent<this>;
-  on: OnEvent<this>;
-  once: OnEvent<this>;
-  removeListener: OnEvent<this>;
+  on<TCEvent extends TypedContractEvent>(
+    event: TCEvent,
+    listener: TypedListener<TCEvent>
+  ): Promise<this>;
+  on<TCEvent extends TypedContractEvent>(
+    filter: TypedDeferredTopicFilter<TCEvent>,
+    listener: TypedListener<TCEvent>
+  ): Promise<this>;
 
-  functions: {
-    getItemPackNFTs(overrides?: CallOverrides): Promise<[string[]]>;
+  once<TCEvent extends TypedContractEvent>(
+    event: TCEvent,
+    listener: TypedListener<TCEvent>
+  ): Promise<this>;
+  once<TCEvent extends TypedContractEvent>(
+    filter: TypedDeferredTopicFilter<TCEvent>,
+    listener: TypedListener<TCEvent>
+  ): Promise<this>;
 
-    getL1NFT(overrides?: CallOverrides): Promise<[string]>;
+  listeners<TCEvent extends TypedContractEvent>(
+    event: TCEvent
+  ): Promise<Array<TypedListener<TCEvent>>>;
+  listeners(eventName?: string): Promise<Array<Listener>>;
+  removeAllListeners<TCEvent extends TypedContractEvent>(
+    event?: TCEvent
+  ): Promise<this>;
 
-    setGame(
-      game_: PromiseOrValue<string>,
-      overrides?: Overrides & { from?: PromiseOrValue<string> }
-    ): Promise<ContractTransaction>;
-  };
+  getItemPackNFTs: TypedContractMethod<[], [string[]], "view">;
 
-  getItemPackNFTs(overrides?: CallOverrides): Promise<string[]>;
+  getL1NFT: TypedContractMethod<[], [string], "view">;
 
-  getL1NFT(overrides?: CallOverrides): Promise<string>;
+  setGame: TypedContractMethod<[game_: AddressLike], [void], "nonpayable">;
 
-  setGame(
-    game_: PromiseOrValue<string>,
-    overrides?: Overrides & { from?: PromiseOrValue<string> }
-  ): Promise<ContractTransaction>;
+  getFunction<T extends ContractMethod = ContractMethod>(
+    key: string | FunctionFragment
+  ): T;
 
-  callStatic: {
-    getItemPackNFTs(overrides?: CallOverrides): Promise<string[]>;
-
-    getL1NFT(overrides?: CallOverrides): Promise<string>;
-
-    setGame(
-      game_: PromiseOrValue<string>,
-      overrides?: CallOverrides
-    ): Promise<void>;
-  };
+  getFunction(
+    nameOrSignature: "getItemPackNFTs"
+  ): TypedContractMethod<[], [string[]], "view">;
+  getFunction(
+    nameOrSignature: "getL1NFT"
+  ): TypedContractMethod<[], [string], "view">;
+  getFunction(
+    nameOrSignature: "setGame"
+  ): TypedContractMethod<[game_: AddressLike], [void], "nonpayable">;
 
   filters: {};
-
-  estimateGas: {
-    getItemPackNFTs(overrides?: CallOverrides): Promise<BigNumber>;
-
-    getL1NFT(overrides?: CallOverrides): Promise<BigNumber>;
-
-    setGame(
-      game_: PromiseOrValue<string>,
-      overrides?: Overrides & { from?: PromiseOrValue<string> }
-    ): Promise<BigNumber>;
-  };
-
-  populateTransaction: {
-    getItemPackNFTs(overrides?: CallOverrides): Promise<PopulatedTransaction>;
-
-    getL1NFT(overrides?: CallOverrides): Promise<PopulatedTransaction>;
-
-    setGame(
-      game_: PromiseOrValue<string>,
-      overrides?: Overrides & { from?: PromiseOrValue<string> }
-    ): Promise<PopulatedTransaction>;
-  };
 }

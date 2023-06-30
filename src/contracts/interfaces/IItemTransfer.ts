@@ -3,47 +3,42 @@
 /* eslint-disable */
 import type {
   BaseContract,
-  BigNumber,
   BigNumberish,
   BytesLike,
-  CallOverrides,
-  ContractTransaction,
-  Overrides,
-  PopulatedTransaction,
-  Signer,
-  utils,
-} from "ethers";
-import type {
   FunctionFragment,
   Result,
+  Interface,
   EventFragment,
-} from "@ethersproject/abi";
-import type { Listener, Provider } from "@ethersproject/providers";
+  ContractRunner,
+  ContractMethod,
+  Listener,
+} from "ethers";
 import type {
-  TypedEventFilter,
-  TypedEvent,
+  TypedContractEvent,
+  TypedDeferredTopicFilter,
+  TypedEventLog,
+  TypedLogDescription,
   TypedListener,
-  OnEvent,
-  PromiseOrValue,
+  TypedContractMethod,
 } from "../../common";
 
 export declare namespace IItemTransfer {
   export type TransferValidationResultStruct = {
-    validWorldId: PromiseOrValue<boolean>;
-    validTokenId: PromiseOrValue<boolean>;
-    validTargetTokenId: PromiseOrValue<boolean>;
-    validLength: PromiseOrValue<boolean>;
-    validTransferables: PromiseOrValue<boolean>[];
-    validAmounts: PromiseOrValue<boolean>[];
+    validWorldId: boolean;
+    validTokenId: boolean;
+    validTargetTokenId: boolean;
+    validLength: boolean;
+    validTransferables: boolean[];
+    validAmounts: boolean[];
   };
 
   export type TransferValidationResultStructOutput = [
-    boolean,
-    boolean,
-    boolean,
-    boolean,
-    boolean[],
-    boolean[]
+    validWorldId: boolean,
+    validTokenId: boolean,
+    validTargetTokenId: boolean,
+    validLength: boolean,
+    validTransferables: boolean[],
+    validAmounts: boolean[]
   ] & {
     validWorldId: boolean;
     validTokenId: boolean;
@@ -54,34 +49,31 @@ export declare namespace IItemTransfer {
   };
 }
 
-export interface IItemTransferInterface extends utils.Interface {
-  functions: {
-    "transfer(uint256,uint256,uint256,uint256[],int64[])": FunctionFragment;
-    "validateTransfer(uint256,uint256,uint256,uint256[],int64[])": FunctionFragment;
-  };
-
+export interface IItemTransferInterface extends Interface {
   getFunction(
-    nameOrSignatureOrTopic: "transfer" | "validateTransfer"
+    nameOrSignature: "transfer" | "validateTransfer"
   ): FunctionFragment;
+
+  getEvent(nameOrSignatureOrTopic: "TransferItems"): EventFragment;
 
   encodeFunctionData(
     functionFragment: "transfer",
     values: [
-      PromiseOrValue<BigNumberish>,
-      PromiseOrValue<BigNumberish>,
-      PromiseOrValue<BigNumberish>,
-      PromiseOrValue<BigNumberish>[],
-      PromiseOrValue<BigNumberish>[]
+      BigNumberish,
+      BigNumberish,
+      BigNumberish,
+      BigNumberish[],
+      BigNumberish[]
     ]
   ): string;
   encodeFunctionData(
     functionFragment: "validateTransfer",
     values: [
-      PromiseOrValue<BigNumberish>,
-      PromiseOrValue<BigNumberish>,
-      PromiseOrValue<BigNumberish>,
-      PromiseOrValue<BigNumberish>[],
-      PromiseOrValue<BigNumberish>[]
+      BigNumberish,
+      BigNumberish,
+      BigNumberish,
+      BigNumberish[],
+      BigNumberish[]
     ]
   ): string;
 
@@ -90,166 +82,152 @@ export interface IItemTransferInterface extends utils.Interface {
     functionFragment: "validateTransfer",
     data: BytesLike
   ): Result;
-
-  events: {
-    "TransferItems(uint256,uint256,uint256,uint256[],int64[])": EventFragment;
-  };
-
-  getEvent(nameOrSignatureOrTopic: "TransferItems"): EventFragment;
 }
 
-export interface TransferItemsEventObject {
-  worldId: BigNumber;
-  tokenId: BigNumber;
-  targetTokenId: BigNumber;
-  itemDefinitionIds: BigNumber[];
-  amounts: BigNumber[];
+export namespace TransferItemsEvent {
+  export type InputTuple = [
+    worldId: BigNumberish,
+    tokenId: BigNumberish,
+    targetTokenId: BigNumberish,
+    itemDefinitionIds: BigNumberish[],
+    amounts: BigNumberish[]
+  ];
+  export type OutputTuple = [
+    worldId: bigint,
+    tokenId: bigint,
+    targetTokenId: bigint,
+    itemDefinitionIds: bigint[],
+    amounts: bigint[]
+  ];
+  export interface OutputObject {
+    worldId: bigint;
+    tokenId: bigint;
+    targetTokenId: bigint;
+    itemDefinitionIds: bigint[];
+    amounts: bigint[];
+  }
+  export type Event = TypedContractEvent<InputTuple, OutputTuple, OutputObject>;
+  export type Filter = TypedDeferredTopicFilter<Event>;
+  export type Log = TypedEventLog<Event>;
+  export type LogDescription = TypedLogDescription<Event>;
 }
-export type TransferItemsEvent = TypedEvent<
-  [BigNumber, BigNumber, BigNumber, BigNumber[], BigNumber[]],
-  TransferItemsEventObject
->;
-
-export type TransferItemsEventFilter = TypedEventFilter<TransferItemsEvent>;
 
 export interface IItemTransfer extends BaseContract {
-  connect(signerOrProvider: Signer | Provider | string): this;
-  attach(addressOrName: string): this;
-  deployed(): Promise<this>;
+  connect(runner?: ContractRunner | null): IItemTransfer;
+  waitForDeployment(): Promise<this>;
 
   interface: IItemTransferInterface;
 
-  queryFilter<TEvent extends TypedEvent>(
-    event: TypedEventFilter<TEvent>,
+  queryFilter<TCEvent extends TypedContractEvent>(
+    event: TCEvent,
     fromBlockOrBlockhash?: string | number | undefined,
     toBlock?: string | number | undefined
-  ): Promise<Array<TEvent>>;
+  ): Promise<Array<TypedEventLog<TCEvent>>>;
+  queryFilter<TCEvent extends TypedContractEvent>(
+    filter: TypedDeferredTopicFilter<TCEvent>,
+    fromBlockOrBlockhash?: string | number | undefined,
+    toBlock?: string | number | undefined
+  ): Promise<Array<TypedEventLog<TCEvent>>>;
 
-  listeners<TEvent extends TypedEvent>(
-    eventFilter?: TypedEventFilter<TEvent>
-  ): Array<TypedListener<TEvent>>;
-  listeners(eventName?: string): Array<Listener>;
-  removeAllListeners<TEvent extends TypedEvent>(
-    eventFilter: TypedEventFilter<TEvent>
-  ): this;
-  removeAllListeners(eventName?: string): this;
-  off: OnEvent<this>;
-  on: OnEvent<this>;
-  once: OnEvent<this>;
-  removeListener: OnEvent<this>;
+  on<TCEvent extends TypedContractEvent>(
+    event: TCEvent,
+    listener: TypedListener<TCEvent>
+  ): Promise<this>;
+  on<TCEvent extends TypedContractEvent>(
+    filter: TypedDeferredTopicFilter<TCEvent>,
+    listener: TypedListener<TCEvent>
+  ): Promise<this>;
 
-  functions: {
-    transfer(
-      worldId: PromiseOrValue<BigNumberish>,
-      tokenId: PromiseOrValue<BigNumberish>,
-      targetTokenId: PromiseOrValue<BigNumberish>,
-      itemDefinitionIds: PromiseOrValue<BigNumberish>[],
-      amounts: PromiseOrValue<BigNumberish>[],
-      overrides?: Overrides & { from?: PromiseOrValue<string> }
-    ): Promise<ContractTransaction>;
+  once<TCEvent extends TypedContractEvent>(
+    event: TCEvent,
+    listener: TypedListener<TCEvent>
+  ): Promise<this>;
+  once<TCEvent extends TypedContractEvent>(
+    filter: TypedDeferredTopicFilter<TCEvent>,
+    listener: TypedListener<TCEvent>
+  ): Promise<this>;
 
-    validateTransfer(
-      worldId: PromiseOrValue<BigNumberish>,
-      tokenId: PromiseOrValue<BigNumberish>,
-      targetTokenId: PromiseOrValue<BigNumberish>,
-      itemDefinitionIds: PromiseOrValue<BigNumberish>[],
-      amounts: PromiseOrValue<BigNumberish>[],
-      overrides?: CallOverrides
-    ): Promise<[IItemTransfer.TransferValidationResultStructOutput]>;
-  };
+  listeners<TCEvent extends TypedContractEvent>(
+    event: TCEvent
+  ): Promise<Array<TypedListener<TCEvent>>>;
+  listeners(eventName?: string): Promise<Array<Listener>>;
+  removeAllListeners<TCEvent extends TypedContractEvent>(
+    event?: TCEvent
+  ): Promise<this>;
 
-  transfer(
-    worldId: PromiseOrValue<BigNumberish>,
-    tokenId: PromiseOrValue<BigNumberish>,
-    targetTokenId: PromiseOrValue<BigNumberish>,
-    itemDefinitionIds: PromiseOrValue<BigNumberish>[],
-    amounts: PromiseOrValue<BigNumberish>[],
-    overrides?: Overrides & { from?: PromiseOrValue<string> }
-  ): Promise<ContractTransaction>;
+  transfer: TypedContractMethod<
+    [
+      worldId: BigNumberish,
+      tokenId: BigNumberish,
+      targetTokenId: BigNumberish,
+      itemDefinitionIds: BigNumberish[],
+      amounts: BigNumberish[]
+    ],
+    [void],
+    "nonpayable"
+  >;
 
-  validateTransfer(
-    worldId: PromiseOrValue<BigNumberish>,
-    tokenId: PromiseOrValue<BigNumberish>,
-    targetTokenId: PromiseOrValue<BigNumberish>,
-    itemDefinitionIds: PromiseOrValue<BigNumberish>[],
-    amounts: PromiseOrValue<BigNumberish>[],
-    overrides?: CallOverrides
-  ): Promise<IItemTransfer.TransferValidationResultStructOutput>;
+  validateTransfer: TypedContractMethod<
+    [
+      worldId: BigNumberish,
+      tokenId: BigNumberish,
+      targetTokenId: BigNumberish,
+      itemDefinitionIds: BigNumberish[],
+      amounts: BigNumberish[]
+    ],
+    [IItemTransfer.TransferValidationResultStructOutput],
+    "view"
+  >;
 
-  callStatic: {
-    transfer(
-      worldId: PromiseOrValue<BigNumberish>,
-      tokenId: PromiseOrValue<BigNumberish>,
-      targetTokenId: PromiseOrValue<BigNumberish>,
-      itemDefinitionIds: PromiseOrValue<BigNumberish>[],
-      amounts: PromiseOrValue<BigNumberish>[],
-      overrides?: CallOverrides
-    ): Promise<void>;
+  getFunction<T extends ContractMethod = ContractMethod>(
+    key: string | FunctionFragment
+  ): T;
 
-    validateTransfer(
-      worldId: PromiseOrValue<BigNumberish>,
-      tokenId: PromiseOrValue<BigNumberish>,
-      targetTokenId: PromiseOrValue<BigNumberish>,
-      itemDefinitionIds: PromiseOrValue<BigNumberish>[],
-      amounts: PromiseOrValue<BigNumberish>[],
-      overrides?: CallOverrides
-    ): Promise<IItemTransfer.TransferValidationResultStructOutput>;
-  };
+  getFunction(
+    nameOrSignature: "transfer"
+  ): TypedContractMethod<
+    [
+      worldId: BigNumberish,
+      tokenId: BigNumberish,
+      targetTokenId: BigNumberish,
+      itemDefinitionIds: BigNumberish[],
+      amounts: BigNumberish[]
+    ],
+    [void],
+    "nonpayable"
+  >;
+  getFunction(
+    nameOrSignature: "validateTransfer"
+  ): TypedContractMethod<
+    [
+      worldId: BigNumberish,
+      tokenId: BigNumberish,
+      targetTokenId: BigNumberish,
+      itemDefinitionIds: BigNumberish[],
+      amounts: BigNumberish[]
+    ],
+    [IItemTransfer.TransferValidationResultStructOutput],
+    "view"
+  >;
+
+  getEvent(
+    key: "TransferItems"
+  ): TypedContractEvent<
+    TransferItemsEvent.InputTuple,
+    TransferItemsEvent.OutputTuple,
+    TransferItemsEvent.OutputObject
+  >;
 
   filters: {
-    "TransferItems(uint256,uint256,uint256,uint256[],int64[])"(
-      worldId?: PromiseOrValue<BigNumberish> | null,
-      tokenId?: PromiseOrValue<BigNumberish> | null,
-      targetTokenId?: PromiseOrValue<BigNumberish> | null,
-      itemDefinitionIds?: null,
-      amounts?: null
-    ): TransferItemsEventFilter;
-    TransferItems(
-      worldId?: PromiseOrValue<BigNumberish> | null,
-      tokenId?: PromiseOrValue<BigNumberish> | null,
-      targetTokenId?: PromiseOrValue<BigNumberish> | null,
-      itemDefinitionIds?: null,
-      amounts?: null
-    ): TransferItemsEventFilter;
-  };
-
-  estimateGas: {
-    transfer(
-      worldId: PromiseOrValue<BigNumberish>,
-      tokenId: PromiseOrValue<BigNumberish>,
-      targetTokenId: PromiseOrValue<BigNumberish>,
-      itemDefinitionIds: PromiseOrValue<BigNumberish>[],
-      amounts: PromiseOrValue<BigNumberish>[],
-      overrides?: Overrides & { from?: PromiseOrValue<string> }
-    ): Promise<BigNumber>;
-
-    validateTransfer(
-      worldId: PromiseOrValue<BigNumberish>,
-      tokenId: PromiseOrValue<BigNumberish>,
-      targetTokenId: PromiseOrValue<BigNumberish>,
-      itemDefinitionIds: PromiseOrValue<BigNumberish>[],
-      amounts: PromiseOrValue<BigNumberish>[],
-      overrides?: CallOverrides
-    ): Promise<BigNumber>;
-  };
-
-  populateTransaction: {
-    transfer(
-      worldId: PromiseOrValue<BigNumberish>,
-      tokenId: PromiseOrValue<BigNumberish>,
-      targetTokenId: PromiseOrValue<BigNumberish>,
-      itemDefinitionIds: PromiseOrValue<BigNumberish>[],
-      amounts: PromiseOrValue<BigNumberish>[],
-      overrides?: Overrides & { from?: PromiseOrValue<string> }
-    ): Promise<PopulatedTransaction>;
-
-    validateTransfer(
-      worldId: PromiseOrValue<BigNumberish>,
-      tokenId: PromiseOrValue<BigNumberish>,
-      targetTokenId: PromiseOrValue<BigNumberish>,
-      itemDefinitionIds: PromiseOrValue<BigNumberish>[],
-      amounts: PromiseOrValue<BigNumberish>[],
-      overrides?: CallOverrides
-    ): Promise<PopulatedTransaction>;
+    "TransferItems(uint256,uint256,uint256,uint256[],int64[])": TypedContractEvent<
+      TransferItemsEvent.InputTuple,
+      TransferItemsEvent.OutputTuple,
+      TransferItemsEvent.OutputObject
+    >;
+    TransferItems: TypedContractEvent<
+      TransferItemsEvent.InputTuple,
+      TransferItemsEvent.OutputTuple,
+      TransferItemsEvent.OutputObject
+    >;
   };
 }

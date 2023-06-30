@@ -2,8 +2,7 @@
 /* tslint:disable */
 /* eslint-disable */
 
-import { Contract, Signer, utils } from "ethers";
-import type { Provider } from "@ethersproject/providers";
+import { Contract, Interface, type ContractRunner } from "ethers";
 import type {
   IL1NFT,
   IL1NFTInterface,
@@ -492,9 +491,9 @@ const _abi = [
 export class IL1NFT__factory {
   static readonly abi = _abi;
   static createInterface(): IL1NFTInterface {
-    return new utils.Interface(_abi) as IL1NFTInterface;
+    return new Interface(_abi) as IL1NFTInterface;
   }
-  static connect(address: string, signerOrProvider: Signer | Provider): IL1NFT {
-    return new Contract(address, _abi, signerOrProvider) as IL1NFT;
+  static connect(address: string, runner?: ContractRunner | null): IL1NFT {
+    return new Contract(address, _abi, runner) as unknown as IL1NFT;
   }
 }

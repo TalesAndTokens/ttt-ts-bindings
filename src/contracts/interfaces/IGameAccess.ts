@@ -3,37 +3,26 @@
 /* eslint-disable */
 import type {
   BaseContract,
-  BigNumber,
   BigNumberish,
   BytesLike,
-  CallOverrides,
-  PopulatedTransaction,
-  Signer,
-  utils,
+  FunctionFragment,
+  Result,
+  Interface,
+  ContractRunner,
+  ContractMethod,
+  Listener,
 } from "ethers";
-import type { FunctionFragment, Result } from "@ethersproject/abi";
-import type { Listener, Provider } from "@ethersproject/providers";
 import type {
-  TypedEventFilter,
-  TypedEvent,
+  TypedContractEvent,
+  TypedDeferredTopicFilter,
+  TypedEventLog,
   TypedListener,
-  OnEvent,
-  PromiseOrValue,
+  TypedContractMethod,
 } from "../../common";
 
-export interface IGameAccessInterface extends utils.Interface {
-  functions: {
-    "getGameAdminAddresses()": FunctionFragment;
-    "getInterfaceAddress(string)": FunctionFragment;
-    "getInterfaceAddresses()": FunctionFragment;
-    "getItemPackNFTAddresses(uint256)": FunctionFragment;
-    "getTokenOwnerAddress(uint256,uint256)": FunctionFragment;
-    "getWorldAdminAddresses(uint256)": FunctionFragment;
-    "getWorldOwnerAddresses(uint256)": FunctionFragment;
-  };
-
+export interface IGameAccessInterface extends Interface {
   getFunction(
-    nameOrSignatureOrTopic:
+    nameOrSignature:
       | "getGameAdminAddresses"
       | "getInterfaceAddress"
       | "getInterfaceAddresses"
@@ -49,7 +38,7 @@ export interface IGameAccessInterface extends utils.Interface {
   ): string;
   encodeFunctionData(
     functionFragment: "getInterfaceAddress",
-    values: [PromiseOrValue<string>]
+    values: [string]
   ): string;
   encodeFunctionData(
     functionFragment: "getInterfaceAddresses",
@@ -57,19 +46,19 @@ export interface IGameAccessInterface extends utils.Interface {
   ): string;
   encodeFunctionData(
     functionFragment: "getItemPackNFTAddresses",
-    values: [PromiseOrValue<BigNumberish>]
+    values: [BigNumberish]
   ): string;
   encodeFunctionData(
     functionFragment: "getTokenOwnerAddress",
-    values: [PromiseOrValue<BigNumberish>, PromiseOrValue<BigNumberish>]
+    values: [BigNumberish, BigNumberish]
   ): string;
   encodeFunctionData(
     functionFragment: "getWorldAdminAddresses",
-    values: [PromiseOrValue<BigNumberish>]
+    values: [BigNumberish]
   ): string;
   encodeFunctionData(
     functionFragment: "getWorldOwnerAddresses",
-    values: [PromiseOrValue<BigNumberish>]
+    values: [BigNumberish]
   ): string;
 
   decodeFunctionResult(
@@ -100,197 +89,110 @@ export interface IGameAccessInterface extends utils.Interface {
     functionFragment: "getWorldOwnerAddresses",
     data: BytesLike
   ): Result;
-
-  events: {};
 }
 
 export interface IGameAccess extends BaseContract {
-  connect(signerOrProvider: Signer | Provider | string): this;
-  attach(addressOrName: string): this;
-  deployed(): Promise<this>;
+  connect(runner?: ContractRunner | null): IGameAccess;
+  waitForDeployment(): Promise<this>;
 
   interface: IGameAccessInterface;
 
-  queryFilter<TEvent extends TypedEvent>(
-    event: TypedEventFilter<TEvent>,
+  queryFilter<TCEvent extends TypedContractEvent>(
+    event: TCEvent,
     fromBlockOrBlockhash?: string | number | undefined,
     toBlock?: string | number | undefined
-  ): Promise<Array<TEvent>>;
+  ): Promise<Array<TypedEventLog<TCEvent>>>;
+  queryFilter<TCEvent extends TypedContractEvent>(
+    filter: TypedDeferredTopicFilter<TCEvent>,
+    fromBlockOrBlockhash?: string | number | undefined,
+    toBlock?: string | number | undefined
+  ): Promise<Array<TypedEventLog<TCEvent>>>;
 
-  listeners<TEvent extends TypedEvent>(
-    eventFilter?: TypedEventFilter<TEvent>
-  ): Array<TypedListener<TEvent>>;
-  listeners(eventName?: string): Array<Listener>;
-  removeAllListeners<TEvent extends TypedEvent>(
-    eventFilter: TypedEventFilter<TEvent>
-  ): this;
-  removeAllListeners(eventName?: string): this;
-  off: OnEvent<this>;
-  on: OnEvent<this>;
-  once: OnEvent<this>;
-  removeListener: OnEvent<this>;
+  on<TCEvent extends TypedContractEvent>(
+    event: TCEvent,
+    listener: TypedListener<TCEvent>
+  ): Promise<this>;
+  on<TCEvent extends TypedContractEvent>(
+    filter: TypedDeferredTopicFilter<TCEvent>,
+    listener: TypedListener<TCEvent>
+  ): Promise<this>;
 
-  functions: {
-    getGameAdminAddresses(overrides?: CallOverrides): Promise<[string[]]>;
+  once<TCEvent extends TypedContractEvent>(
+    event: TCEvent,
+    listener: TypedListener<TCEvent>
+  ): Promise<this>;
+  once<TCEvent extends TypedContractEvent>(
+    filter: TypedDeferredTopicFilter<TCEvent>,
+    listener: TypedListener<TCEvent>
+  ): Promise<this>;
 
-    getInterfaceAddress(
-      key: PromiseOrValue<string>,
-      overrides?: CallOverrides
-    ): Promise<[string]>;
+  listeners<TCEvent extends TypedContractEvent>(
+    event: TCEvent
+  ): Promise<Array<TypedListener<TCEvent>>>;
+  listeners(eventName?: string): Promise<Array<Listener>>;
+  removeAllListeners<TCEvent extends TypedContractEvent>(
+    event?: TCEvent
+  ): Promise<this>;
 
-    getInterfaceAddresses(overrides?: CallOverrides): Promise<[string[]]>;
+  getGameAdminAddresses: TypedContractMethod<[], [string[]], "view">;
 
-    getItemPackNFTAddresses(
-      worldId: PromiseOrValue<BigNumberish>,
-      overrides?: CallOverrides
-    ): Promise<[string[]]>;
+  getInterfaceAddress: TypedContractMethod<[key: string], [string], "view">;
 
-    getTokenOwnerAddress(
-      worldId: PromiseOrValue<BigNumberish>,
-      tokenId: PromiseOrValue<BigNumberish>,
-      overrides?: CallOverrides
-    ): Promise<[string]>;
+  getInterfaceAddresses: TypedContractMethod<[], [string[]], "view">;
 
-    getWorldAdminAddresses(
-      worldId: PromiseOrValue<BigNumberish>,
-      overrides?: CallOverrides
-    ): Promise<[string[]]>;
+  getItemPackNFTAddresses: TypedContractMethod<
+    [worldId: BigNumberish],
+    [string[]],
+    "view"
+  >;
 
-    getWorldOwnerAddresses(
-      worldId: PromiseOrValue<BigNumberish>,
-      overrides?: CallOverrides
-    ): Promise<[string[]]>;
-  };
+  getTokenOwnerAddress: TypedContractMethod<
+    [worldId: BigNumberish, tokenId: BigNumberish],
+    [string],
+    "view"
+  >;
 
-  getGameAdminAddresses(overrides?: CallOverrides): Promise<string[]>;
+  getWorldAdminAddresses: TypedContractMethod<
+    [worldId: BigNumberish],
+    [string[]],
+    "view"
+  >;
 
-  getInterfaceAddress(
-    key: PromiseOrValue<string>,
-    overrides?: CallOverrides
-  ): Promise<string>;
+  getWorldOwnerAddresses: TypedContractMethod<
+    [worldId: BigNumberish],
+    [string[]],
+    "view"
+  >;
 
-  getInterfaceAddresses(overrides?: CallOverrides): Promise<string[]>;
+  getFunction<T extends ContractMethod = ContractMethod>(
+    key: string | FunctionFragment
+  ): T;
 
-  getItemPackNFTAddresses(
-    worldId: PromiseOrValue<BigNumberish>,
-    overrides?: CallOverrides
-  ): Promise<string[]>;
-
-  getTokenOwnerAddress(
-    worldId: PromiseOrValue<BigNumberish>,
-    tokenId: PromiseOrValue<BigNumberish>,
-    overrides?: CallOverrides
-  ): Promise<string>;
-
-  getWorldAdminAddresses(
-    worldId: PromiseOrValue<BigNumberish>,
-    overrides?: CallOverrides
-  ): Promise<string[]>;
-
-  getWorldOwnerAddresses(
-    worldId: PromiseOrValue<BigNumberish>,
-    overrides?: CallOverrides
-  ): Promise<string[]>;
-
-  callStatic: {
-    getGameAdminAddresses(overrides?: CallOverrides): Promise<string[]>;
-
-    getInterfaceAddress(
-      key: PromiseOrValue<string>,
-      overrides?: CallOverrides
-    ): Promise<string>;
-
-    getInterfaceAddresses(overrides?: CallOverrides): Promise<string[]>;
-
-    getItemPackNFTAddresses(
-      worldId: PromiseOrValue<BigNumberish>,
-      overrides?: CallOverrides
-    ): Promise<string[]>;
-
-    getTokenOwnerAddress(
-      worldId: PromiseOrValue<BigNumberish>,
-      tokenId: PromiseOrValue<BigNumberish>,
-      overrides?: CallOverrides
-    ): Promise<string>;
-
-    getWorldAdminAddresses(
-      worldId: PromiseOrValue<BigNumberish>,
-      overrides?: CallOverrides
-    ): Promise<string[]>;
-
-    getWorldOwnerAddresses(
-      worldId: PromiseOrValue<BigNumberish>,
-      overrides?: CallOverrides
-    ): Promise<string[]>;
-  };
+  getFunction(
+    nameOrSignature: "getGameAdminAddresses"
+  ): TypedContractMethod<[], [string[]], "view">;
+  getFunction(
+    nameOrSignature: "getInterfaceAddress"
+  ): TypedContractMethod<[key: string], [string], "view">;
+  getFunction(
+    nameOrSignature: "getInterfaceAddresses"
+  ): TypedContractMethod<[], [string[]], "view">;
+  getFunction(
+    nameOrSignature: "getItemPackNFTAddresses"
+  ): TypedContractMethod<[worldId: BigNumberish], [string[]], "view">;
+  getFunction(
+    nameOrSignature: "getTokenOwnerAddress"
+  ): TypedContractMethod<
+    [worldId: BigNumberish, tokenId: BigNumberish],
+    [string],
+    "view"
+  >;
+  getFunction(
+    nameOrSignature: "getWorldAdminAddresses"
+  ): TypedContractMethod<[worldId: BigNumberish], [string[]], "view">;
+  getFunction(
+    nameOrSignature: "getWorldOwnerAddresses"
+  ): TypedContractMethod<[worldId: BigNumberish], [string[]], "view">;
 
   filters: {};
-
-  estimateGas: {
-    getGameAdminAddresses(overrides?: CallOverrides): Promise<BigNumber>;
-
-    getInterfaceAddress(
-      key: PromiseOrValue<string>,
-      overrides?: CallOverrides
-    ): Promise<BigNumber>;
-
-    getInterfaceAddresses(overrides?: CallOverrides): Promise<BigNumber>;
-
-    getItemPackNFTAddresses(
-      worldId: PromiseOrValue<BigNumberish>,
-      overrides?: CallOverrides
-    ): Promise<BigNumber>;
-
-    getTokenOwnerAddress(
-      worldId: PromiseOrValue<BigNumberish>,
-      tokenId: PromiseOrValue<BigNumberish>,
-      overrides?: CallOverrides
-    ): Promise<BigNumber>;
-
-    getWorldAdminAddresses(
-      worldId: PromiseOrValue<BigNumberish>,
-      overrides?: CallOverrides
-    ): Promise<BigNumber>;
-
-    getWorldOwnerAddresses(
-      worldId: PromiseOrValue<BigNumberish>,
-      overrides?: CallOverrides
-    ): Promise<BigNumber>;
-  };
-
-  populateTransaction: {
-    getGameAdminAddresses(
-      overrides?: CallOverrides
-    ): Promise<PopulatedTransaction>;
-
-    getInterfaceAddress(
-      key: PromiseOrValue<string>,
-      overrides?: CallOverrides
-    ): Promise<PopulatedTransaction>;
-
-    getInterfaceAddresses(
-      overrides?: CallOverrides
-    ): Promise<PopulatedTransaction>;
-
-    getItemPackNFTAddresses(
-      worldId: PromiseOrValue<BigNumberish>,
-      overrides?: CallOverrides
-    ): Promise<PopulatedTransaction>;
-
-    getTokenOwnerAddress(
-      worldId: PromiseOrValue<BigNumberish>,
-      tokenId: PromiseOrValue<BigNumberish>,
-      overrides?: CallOverrides
-    ): Promise<PopulatedTransaction>;
-
-    getWorldAdminAddresses(
-      worldId: PromiseOrValue<BigNumberish>,
-      overrides?: CallOverrides
-    ): Promise<PopulatedTransaction>;
-
-    getWorldOwnerAddresses(
-      worldId: PromiseOrValue<BigNumberish>,
-      overrides?: CallOverrides
-    ): Promise<PopulatedTransaction>;
-  };
 }
