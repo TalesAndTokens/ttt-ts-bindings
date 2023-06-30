@@ -3,66 +3,58 @@
 /* eslint-disable */
 import type {
   BaseContract,
-  BigNumber,
   BigNumberish,
   BytesLike,
-  CallOverrides,
-  ContractTransaction,
-  Overrides,
-  PopulatedTransaction,
-  Signer,
-  utils,
+  FunctionFragment,
+  Result,
+  Interface,
+  ContractRunner,
+  ContractMethod,
+  Listener,
 } from "ethers";
-import type { FunctionFragment, Result } from "@ethersproject/abi";
-import type { Listener, Provider } from "@ethersproject/providers";
 import type {
-  TypedEventFilter,
-  TypedEvent,
+  TypedContractEvent,
+  TypedDeferredTopicFilter,
+  TypedEventLog,
   TypedListener,
-  OnEvent,
-  PromiseOrValue,
+  TypedContractMethod,
 } from "../../../common";
 
 export declare namespace IItemDefinition {
   export type ItemDefinitionRecordStruct = {
-    itemDefinitionId: PromiseOrValue<BigNumberish>;
-    category: PromiseOrValue<string>;
-    enable: PromiseOrValue<boolean>;
-    salable: PromiseOrValue<boolean>;
-    transferable: PromiseOrValue<boolean>;
-    effectivePeriod: PromiseOrValue<BigNumberish>;
-  };
-
-  export type ItemDefinitionRecordStructOutput = [
-    BigNumber,
-    string,
-    boolean,
-    boolean,
-    boolean,
-    BigNumber
-  ] & {
-    itemDefinitionId: BigNumber;
+    itemDefinitionId: BigNumberish;
     category: string;
     enable: boolean;
     salable: boolean;
     transferable: boolean;
-    effectivePeriod: BigNumber;
+    effectivePeriod: BigNumberish;
+  };
+
+  export type ItemDefinitionRecordStructOutput = [
+    itemDefinitionId: bigint,
+    category: string,
+    enable: boolean,
+    salable: boolean,
+    transferable: boolean,
+    effectivePeriod: bigint
+  ] & {
+    itemDefinitionId: bigint;
+    category: string;
+    enable: boolean;
+    salable: boolean;
+    transferable: boolean;
+    effectivePeriod: bigint;
   };
 }
 
-export interface IItemDefinitionInterface extends utils.Interface {
-  functions: {
-    "getDefinition(uint256)": FunctionFragment;
-    "setDefinitions((uint256,string,bool,bool,bool,uint256)[])": FunctionFragment;
-  };
-
+export interface IItemDefinitionInterface extends Interface {
   getFunction(
-    nameOrSignatureOrTopic: "getDefinition" | "setDefinitions"
+    nameOrSignature: "getDefinition" | "setDefinitions"
   ): FunctionFragment;
 
   encodeFunctionData(
     functionFragment: "getDefinition",
-    values: [PromiseOrValue<BigNumberish>]
+    values: [BigNumberish]
   ): string;
   encodeFunctionData(
     functionFragment: "setDefinitions",
@@ -77,93 +69,81 @@ export interface IItemDefinitionInterface extends utils.Interface {
     functionFragment: "setDefinitions",
     data: BytesLike
   ): Result;
-
-  events: {};
 }
 
 export interface IItemDefinition extends BaseContract {
-  connect(signerOrProvider: Signer | Provider | string): this;
-  attach(addressOrName: string): this;
-  deployed(): Promise<this>;
+  connect(runner?: ContractRunner | null): IItemDefinition;
+  waitForDeployment(): Promise<this>;
 
   interface: IItemDefinitionInterface;
 
-  queryFilter<TEvent extends TypedEvent>(
-    event: TypedEventFilter<TEvent>,
+  queryFilter<TCEvent extends TypedContractEvent>(
+    event: TCEvent,
     fromBlockOrBlockhash?: string | number | undefined,
     toBlock?: string | number | undefined
-  ): Promise<Array<TEvent>>;
+  ): Promise<Array<TypedEventLog<TCEvent>>>;
+  queryFilter<TCEvent extends TypedContractEvent>(
+    filter: TypedDeferredTopicFilter<TCEvent>,
+    fromBlockOrBlockhash?: string | number | undefined,
+    toBlock?: string | number | undefined
+  ): Promise<Array<TypedEventLog<TCEvent>>>;
 
-  listeners<TEvent extends TypedEvent>(
-    eventFilter?: TypedEventFilter<TEvent>
-  ): Array<TypedListener<TEvent>>;
-  listeners(eventName?: string): Array<Listener>;
-  removeAllListeners<TEvent extends TypedEvent>(
-    eventFilter: TypedEventFilter<TEvent>
-  ): this;
-  removeAllListeners(eventName?: string): this;
-  off: OnEvent<this>;
-  on: OnEvent<this>;
-  once: OnEvent<this>;
-  removeListener: OnEvent<this>;
+  on<TCEvent extends TypedContractEvent>(
+    event: TCEvent,
+    listener: TypedListener<TCEvent>
+  ): Promise<this>;
+  on<TCEvent extends TypedContractEvent>(
+    filter: TypedDeferredTopicFilter<TCEvent>,
+    listener: TypedListener<TCEvent>
+  ): Promise<this>;
 
-  functions: {
-    getDefinition(
-      itemDefinitionId_: PromiseOrValue<BigNumberish>,
-      overrides?: CallOverrides
-    ): Promise<[IItemDefinition.ItemDefinitionRecordStructOutput]>;
+  once<TCEvent extends TypedContractEvent>(
+    event: TCEvent,
+    listener: TypedListener<TCEvent>
+  ): Promise<this>;
+  once<TCEvent extends TypedContractEvent>(
+    filter: TypedDeferredTopicFilter<TCEvent>,
+    listener: TypedListener<TCEvent>
+  ): Promise<this>;
 
-    setDefinitions(
-      records: IItemDefinition.ItemDefinitionRecordStruct[],
-      overrides?: Overrides & { from?: PromiseOrValue<string> }
-    ): Promise<ContractTransaction>;
-  };
+  listeners<TCEvent extends TypedContractEvent>(
+    event: TCEvent
+  ): Promise<Array<TypedListener<TCEvent>>>;
+  listeners(eventName?: string): Promise<Array<Listener>>;
+  removeAllListeners<TCEvent extends TypedContractEvent>(
+    event?: TCEvent
+  ): Promise<this>;
 
-  getDefinition(
-    itemDefinitionId_: PromiseOrValue<BigNumberish>,
-    overrides?: CallOverrides
-  ): Promise<IItemDefinition.ItemDefinitionRecordStructOutput>;
+  getDefinition: TypedContractMethod<
+    [itemDefinitionId_: BigNumberish],
+    [IItemDefinition.ItemDefinitionRecordStructOutput],
+    "view"
+  >;
 
-  setDefinitions(
-    records: IItemDefinition.ItemDefinitionRecordStruct[],
-    overrides?: Overrides & { from?: PromiseOrValue<string> }
-  ): Promise<ContractTransaction>;
+  setDefinitions: TypedContractMethod<
+    [records: IItemDefinition.ItemDefinitionRecordStruct[]],
+    [void],
+    "nonpayable"
+  >;
 
-  callStatic: {
-    getDefinition(
-      itemDefinitionId_: PromiseOrValue<BigNumberish>,
-      overrides?: CallOverrides
-    ): Promise<IItemDefinition.ItemDefinitionRecordStructOutput>;
+  getFunction<T extends ContractMethod = ContractMethod>(
+    key: string | FunctionFragment
+  ): T;
 
-    setDefinitions(
-      records: IItemDefinition.ItemDefinitionRecordStruct[],
-      overrides?: CallOverrides
-    ): Promise<void>;
-  };
+  getFunction(
+    nameOrSignature: "getDefinition"
+  ): TypedContractMethod<
+    [itemDefinitionId_: BigNumberish],
+    [IItemDefinition.ItemDefinitionRecordStructOutput],
+    "view"
+  >;
+  getFunction(
+    nameOrSignature: "setDefinitions"
+  ): TypedContractMethod<
+    [records: IItemDefinition.ItemDefinitionRecordStruct[]],
+    [void],
+    "nonpayable"
+  >;
 
   filters: {};
-
-  estimateGas: {
-    getDefinition(
-      itemDefinitionId_: PromiseOrValue<BigNumberish>,
-      overrides?: CallOverrides
-    ): Promise<BigNumber>;
-
-    setDefinitions(
-      records: IItemDefinition.ItemDefinitionRecordStruct[],
-      overrides?: Overrides & { from?: PromiseOrValue<string> }
-    ): Promise<BigNumber>;
-  };
-
-  populateTransaction: {
-    getDefinition(
-      itemDefinitionId_: PromiseOrValue<BigNumberish>,
-      overrides?: CallOverrides
-    ): Promise<PopulatedTransaction>;
-
-    setDefinitions(
-      records: IItemDefinition.ItemDefinitionRecordStruct[],
-      overrides?: Overrides & { from?: PromiseOrValue<string> }
-    ): Promise<PopulatedTransaction>;
-  };
 }

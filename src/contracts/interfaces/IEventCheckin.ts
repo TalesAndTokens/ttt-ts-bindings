@@ -3,41 +3,29 @@
 /* eslint-disable */
 import type {
   BaseContract,
-  BigNumber,
   BigNumberish,
   BytesLike,
-  CallOverrides,
-  ContractTransaction,
-  Overrides,
-  PopulatedTransaction,
-  Signer,
-  utils,
-} from "ethers";
-import type {
   FunctionFragment,
   Result,
+  Interface,
   EventFragment,
-} from "@ethersproject/abi";
-import type { Listener, Provider } from "@ethersproject/providers";
+  AddressLike,
+  ContractRunner,
+  ContractMethod,
+  Listener,
+} from "ethers";
 import type {
-  TypedEventFilter,
-  TypedEvent,
+  TypedContractEvent,
+  TypedDeferredTopicFilter,
+  TypedEventLog,
+  TypedLogDescription,
   TypedListener,
-  OnEvent,
-  PromiseOrValue,
+  TypedContractMethod,
 } from "../../common";
 
-export interface IEventCheckinInterface extends utils.Interface {
-  functions: {
-    "checkin(address,uint256,uint256)": FunctionFragment;
-    "getCheckinCountFromPlayer(address,uint256,uint256)": FunctionFragment;
-    "getEventDefinition(uint256,uint256)": FunctionFragment;
-    "getLatestCheckinTimestampFromPlayer(address,uint256,uint256)": FunctionFragment;
-    "validateCheckin(address,uint256,uint256)": FunctionFragment;
-  };
-
+export interface IEventCheckinInterface extends Interface {
   getFunction(
-    nameOrSignatureOrTopic:
+    nameOrSignature:
       | "checkin"
       | "getCheckinCountFromPlayer"
       | "getEventDefinition"
@@ -45,41 +33,27 @@ export interface IEventCheckinInterface extends utils.Interface {
       | "validateCheckin"
   ): FunctionFragment;
 
+  getEvent(nameOrSignatureOrTopic: "Checkin"): EventFragment;
+
   encodeFunctionData(
     functionFragment: "checkin",
-    values: [
-      PromiseOrValue<string>,
-      PromiseOrValue<BigNumberish>,
-      PromiseOrValue<BigNumberish>
-    ]
+    values: [AddressLike, BigNumberish, BigNumberish]
   ): string;
   encodeFunctionData(
     functionFragment: "getCheckinCountFromPlayer",
-    values: [
-      PromiseOrValue<string>,
-      PromiseOrValue<BigNumberish>,
-      PromiseOrValue<BigNumberish>
-    ]
+    values: [AddressLike, BigNumberish, BigNumberish]
   ): string;
   encodeFunctionData(
     functionFragment: "getEventDefinition",
-    values: [PromiseOrValue<BigNumberish>, PromiseOrValue<BigNumberish>]
+    values: [BigNumberish, BigNumberish]
   ): string;
   encodeFunctionData(
     functionFragment: "getLatestCheckinTimestampFromPlayer",
-    values: [
-      PromiseOrValue<string>,
-      PromiseOrValue<BigNumberish>,
-      PromiseOrValue<BigNumberish>
-    ]
+    values: [AddressLike, BigNumberish, BigNumberish]
   ): string;
   encodeFunctionData(
     functionFragment: "validateCheckin",
-    values: [
-      PromiseOrValue<string>,
-      PromiseOrValue<BigNumberish>,
-      PromiseOrValue<BigNumberish>
-    ]
+    values: [AddressLike, BigNumberish, BigNumberish]
   ): string;
 
   decodeFunctionResult(functionFragment: "checkin", data: BytesLike): Result;
@@ -99,282 +73,203 @@ export interface IEventCheckinInterface extends utils.Interface {
     functionFragment: "validateCheckin",
     data: BytesLike
   ): Result;
-
-  events: {
-    "Checkin(address,uint256,uint256,uint256,uint256)": EventFragment;
-  };
-
-  getEvent(nameOrSignatureOrTopic: "Checkin"): EventFragment;
 }
 
-export interface CheckinEventObject {
-  playerWallet: string;
-  worldId: BigNumber;
-  eventDefinitionId: BigNumber;
-  itemPackDefinitionId: BigNumber;
-  itemPackId: BigNumber;
+export namespace CheckinEvent {
+  export type InputTuple = [
+    playerWallet: AddressLike,
+    worldId: BigNumberish,
+    eventDefinitionId: BigNumberish,
+    itemPackDefinitionId: BigNumberish,
+    itemPackId: BigNumberish
+  ];
+  export type OutputTuple = [
+    playerWallet: string,
+    worldId: bigint,
+    eventDefinitionId: bigint,
+    itemPackDefinitionId: bigint,
+    itemPackId: bigint
+  ];
+  export interface OutputObject {
+    playerWallet: string;
+    worldId: bigint;
+    eventDefinitionId: bigint;
+    itemPackDefinitionId: bigint;
+    itemPackId: bigint;
+  }
+  export type Event = TypedContractEvent<InputTuple, OutputTuple, OutputObject>;
+  export type Filter = TypedDeferredTopicFilter<Event>;
+  export type Log = TypedEventLog<Event>;
+  export type LogDescription = TypedLogDescription<Event>;
 }
-export type CheckinEvent = TypedEvent<
-  [string, BigNumber, BigNumber, BigNumber, BigNumber],
-  CheckinEventObject
->;
-
-export type CheckinEventFilter = TypedEventFilter<CheckinEvent>;
 
 export interface IEventCheckin extends BaseContract {
-  connect(signerOrProvider: Signer | Provider | string): this;
-  attach(addressOrName: string): this;
-  deployed(): Promise<this>;
+  connect(runner?: ContractRunner | null): IEventCheckin;
+  waitForDeployment(): Promise<this>;
 
   interface: IEventCheckinInterface;
 
-  queryFilter<TEvent extends TypedEvent>(
-    event: TypedEventFilter<TEvent>,
+  queryFilter<TCEvent extends TypedContractEvent>(
+    event: TCEvent,
     fromBlockOrBlockhash?: string | number | undefined,
     toBlock?: string | number | undefined
-  ): Promise<Array<TEvent>>;
+  ): Promise<Array<TypedEventLog<TCEvent>>>;
+  queryFilter<TCEvent extends TypedContractEvent>(
+    filter: TypedDeferredTopicFilter<TCEvent>,
+    fromBlockOrBlockhash?: string | number | undefined,
+    toBlock?: string | number | undefined
+  ): Promise<Array<TypedEventLog<TCEvent>>>;
 
-  listeners<TEvent extends TypedEvent>(
-    eventFilter?: TypedEventFilter<TEvent>
-  ): Array<TypedListener<TEvent>>;
-  listeners(eventName?: string): Array<Listener>;
-  removeAllListeners<TEvent extends TypedEvent>(
-    eventFilter: TypedEventFilter<TEvent>
-  ): this;
-  removeAllListeners(eventName?: string): this;
-  off: OnEvent<this>;
-  on: OnEvent<this>;
-  once: OnEvent<this>;
-  removeListener: OnEvent<this>;
+  on<TCEvent extends TypedContractEvent>(
+    event: TCEvent,
+    listener: TypedListener<TCEvent>
+  ): Promise<this>;
+  on<TCEvent extends TypedContractEvent>(
+    filter: TypedDeferredTopicFilter<TCEvent>,
+    listener: TypedListener<TCEvent>
+  ): Promise<this>;
 
-  functions: {
-    checkin(
-      playerWallet: PromiseOrValue<string>,
-      worldId: PromiseOrValue<BigNumberish>,
-      eventDefinitionId: PromiseOrValue<BigNumberish>,
-      overrides?: Overrides & { from?: PromiseOrValue<string> }
-    ): Promise<ContractTransaction>;
+  once<TCEvent extends TypedContractEvent>(
+    event: TCEvent,
+    listener: TypedListener<TCEvent>
+  ): Promise<this>;
+  once<TCEvent extends TypedContractEvent>(
+    filter: TypedDeferredTopicFilter<TCEvent>,
+    listener: TypedListener<TCEvent>
+  ): Promise<this>;
 
-    getCheckinCountFromPlayer(
-      playerWallet: PromiseOrValue<string>,
-      worldId: PromiseOrValue<BigNumberish>,
-      eventDefinitionId: PromiseOrValue<BigNumberish>,
-      overrides?: CallOverrides
-    ): Promise<[BigNumber]>;
+  listeners<TCEvent extends TypedContractEvent>(
+    event: TCEvent
+  ): Promise<Array<TypedListener<TCEvent>>>;
+  listeners(eventName?: string): Promise<Array<Listener>>;
+  removeAllListeners<TCEvent extends TypedContractEvent>(
+    event?: TCEvent
+  ): Promise<this>;
 
-    getEventDefinition(
-      worldId: PromiseOrValue<BigNumberish>,
-      eventDefinitionId: PromiseOrValue<BigNumberish>,
-      overrides?: CallOverrides
-    ): Promise<
-      [
-        BigNumber,
-        boolean,
-        BigNumber,
-        string,
-        BigNumber,
-        BigNumber,
-        BigNumber,
-        BigNumber,
-        boolean
-      ]
-    >;
-
-    getLatestCheckinTimestampFromPlayer(
-      playerWallet: PromiseOrValue<string>,
-      worldId: PromiseOrValue<BigNumberish>,
-      eventDefinitionId: PromiseOrValue<BigNumberish>,
-      overrides?: CallOverrides
-    ): Promise<[BigNumber]>;
-
-    validateCheckin(
-      playerWallet: PromiseOrValue<string>,
-      worldId: PromiseOrValue<BigNumberish>,
-      eventDefinitionId: PromiseOrValue<BigNumberish>,
-      overrides?: CallOverrides
-    ): Promise<[boolean, boolean, boolean, boolean, boolean, boolean]>;
-  };
-
-  checkin(
-    playerWallet: PromiseOrValue<string>,
-    worldId: PromiseOrValue<BigNumberish>,
-    eventDefinitionId: PromiseOrValue<BigNumberish>,
-    overrides?: Overrides & { from?: PromiseOrValue<string> }
-  ): Promise<ContractTransaction>;
-
-  getCheckinCountFromPlayer(
-    playerWallet: PromiseOrValue<string>,
-    worldId: PromiseOrValue<BigNumberish>,
-    eventDefinitionId: PromiseOrValue<BigNumberish>,
-    overrides?: CallOverrides
-  ): Promise<BigNumber>;
-
-  getEventDefinition(
-    worldId: PromiseOrValue<BigNumberish>,
-    eventDefinitionId: PromiseOrValue<BigNumberish>,
-    overrides?: CallOverrides
-  ): Promise<
+  checkin: TypedContractMethod<
     [
-      BigNumber,
-      boolean,
-      BigNumber,
-      string,
-      BigNumber,
-      BigNumber,
-      BigNumber,
-      BigNumber,
-      boolean
-    ]
+      playerWallet: AddressLike,
+      worldId: BigNumberish,
+      eventDefinitionId: BigNumberish
+    ],
+    [void],
+    "nonpayable"
   >;
 
-  getLatestCheckinTimestampFromPlayer(
-    playerWallet: PromiseOrValue<string>,
-    worldId: PromiseOrValue<BigNumberish>,
-    eventDefinitionId: PromiseOrValue<BigNumberish>,
-    overrides?: CallOverrides
-  ): Promise<BigNumber>;
+  getCheckinCountFromPlayer: TypedContractMethod<
+    [
+      playerWallet: AddressLike,
+      worldId: BigNumberish,
+      eventDefinitionId: BigNumberish
+    ],
+    [bigint],
+    "view"
+  >;
 
-  validateCheckin(
-    playerWallet: PromiseOrValue<string>,
-    worldId: PromiseOrValue<BigNumberish>,
-    eventDefinitionId: PromiseOrValue<BigNumberish>,
-    overrides?: CallOverrides
-  ): Promise<[boolean, boolean, boolean, boolean, boolean, boolean]>;
+  getEventDefinition: TypedContractMethod<
+    [worldId: BigNumberish, eventDefinitionId: BigNumberish],
+    [
+      [bigint, boolean, bigint, string, bigint, bigint, bigint, bigint, boolean]
+    ],
+    "view"
+  >;
 
-  callStatic: {
-    checkin(
-      playerWallet: PromiseOrValue<string>,
-      worldId: PromiseOrValue<BigNumberish>,
-      eventDefinitionId: PromiseOrValue<BigNumberish>,
-      overrides?: CallOverrides
-    ): Promise<void>;
+  getLatestCheckinTimestampFromPlayer: TypedContractMethod<
+    [
+      playerWallet: AddressLike,
+      worldId: BigNumberish,
+      eventDefinitionId: BigNumberish
+    ],
+    [bigint],
+    "view"
+  >;
 
-    getCheckinCountFromPlayer(
-      playerWallet: PromiseOrValue<string>,
-      worldId: PromiseOrValue<BigNumberish>,
-      eventDefinitionId: PromiseOrValue<BigNumberish>,
-      overrides?: CallOverrides
-    ): Promise<BigNumber>;
+  validateCheckin: TypedContractMethod<
+    [
+      playerWallet: AddressLike,
+      worldId: BigNumberish,
+      eventDefinitionId: BigNumberish
+    ],
+    [[boolean, boolean, boolean, boolean, boolean, boolean]],
+    "view"
+  >;
 
-    getEventDefinition(
-      worldId: PromiseOrValue<BigNumberish>,
-      eventDefinitionId: PromiseOrValue<BigNumberish>,
-      overrides?: CallOverrides
-    ): Promise<
-      [
-        BigNumber,
-        boolean,
-        BigNumber,
-        string,
-        BigNumber,
-        BigNumber,
-        BigNumber,
-        BigNumber,
-        boolean
-      ]
-    >;
+  getFunction<T extends ContractMethod = ContractMethod>(
+    key: string | FunctionFragment
+  ): T;
 
-    getLatestCheckinTimestampFromPlayer(
-      playerWallet: PromiseOrValue<string>,
-      worldId: PromiseOrValue<BigNumberish>,
-      eventDefinitionId: PromiseOrValue<BigNumberish>,
-      overrides?: CallOverrides
-    ): Promise<BigNumber>;
+  getFunction(
+    nameOrSignature: "checkin"
+  ): TypedContractMethod<
+    [
+      playerWallet: AddressLike,
+      worldId: BigNumberish,
+      eventDefinitionId: BigNumberish
+    ],
+    [void],
+    "nonpayable"
+  >;
+  getFunction(
+    nameOrSignature: "getCheckinCountFromPlayer"
+  ): TypedContractMethod<
+    [
+      playerWallet: AddressLike,
+      worldId: BigNumberish,
+      eventDefinitionId: BigNumberish
+    ],
+    [bigint],
+    "view"
+  >;
+  getFunction(
+    nameOrSignature: "getEventDefinition"
+  ): TypedContractMethod<
+    [worldId: BigNumberish, eventDefinitionId: BigNumberish],
+    [
+      [bigint, boolean, bigint, string, bigint, bigint, bigint, bigint, boolean]
+    ],
+    "view"
+  >;
+  getFunction(
+    nameOrSignature: "getLatestCheckinTimestampFromPlayer"
+  ): TypedContractMethod<
+    [
+      playerWallet: AddressLike,
+      worldId: BigNumberish,
+      eventDefinitionId: BigNumberish
+    ],
+    [bigint],
+    "view"
+  >;
+  getFunction(
+    nameOrSignature: "validateCheckin"
+  ): TypedContractMethod<
+    [
+      playerWallet: AddressLike,
+      worldId: BigNumberish,
+      eventDefinitionId: BigNumberish
+    ],
+    [[boolean, boolean, boolean, boolean, boolean, boolean]],
+    "view"
+  >;
 
-    validateCheckin(
-      playerWallet: PromiseOrValue<string>,
-      worldId: PromiseOrValue<BigNumberish>,
-      eventDefinitionId: PromiseOrValue<BigNumberish>,
-      overrides?: CallOverrides
-    ): Promise<[boolean, boolean, boolean, boolean, boolean, boolean]>;
-  };
+  getEvent(
+    key: "Checkin"
+  ): TypedContractEvent<
+    CheckinEvent.InputTuple,
+    CheckinEvent.OutputTuple,
+    CheckinEvent.OutputObject
+  >;
 
   filters: {
-    "Checkin(address,uint256,uint256,uint256,uint256)"(
-      playerWallet?: PromiseOrValue<string> | null,
-      worldId?: PromiseOrValue<BigNumberish> | null,
-      eventDefinitionId?: null,
-      itemPackDefinitionId?: null,
-      itemPackId?: null
-    ): CheckinEventFilter;
-    Checkin(
-      playerWallet?: PromiseOrValue<string> | null,
-      worldId?: PromiseOrValue<BigNumberish> | null,
-      eventDefinitionId?: null,
-      itemPackDefinitionId?: null,
-      itemPackId?: null
-    ): CheckinEventFilter;
-  };
-
-  estimateGas: {
-    checkin(
-      playerWallet: PromiseOrValue<string>,
-      worldId: PromiseOrValue<BigNumberish>,
-      eventDefinitionId: PromiseOrValue<BigNumberish>,
-      overrides?: Overrides & { from?: PromiseOrValue<string> }
-    ): Promise<BigNumber>;
-
-    getCheckinCountFromPlayer(
-      playerWallet: PromiseOrValue<string>,
-      worldId: PromiseOrValue<BigNumberish>,
-      eventDefinitionId: PromiseOrValue<BigNumberish>,
-      overrides?: CallOverrides
-    ): Promise<BigNumber>;
-
-    getEventDefinition(
-      worldId: PromiseOrValue<BigNumberish>,
-      eventDefinitionId: PromiseOrValue<BigNumberish>,
-      overrides?: CallOverrides
-    ): Promise<BigNumber>;
-
-    getLatestCheckinTimestampFromPlayer(
-      playerWallet: PromiseOrValue<string>,
-      worldId: PromiseOrValue<BigNumberish>,
-      eventDefinitionId: PromiseOrValue<BigNumberish>,
-      overrides?: CallOverrides
-    ): Promise<BigNumber>;
-
-    validateCheckin(
-      playerWallet: PromiseOrValue<string>,
-      worldId: PromiseOrValue<BigNumberish>,
-      eventDefinitionId: PromiseOrValue<BigNumberish>,
-      overrides?: CallOverrides
-    ): Promise<BigNumber>;
-  };
-
-  populateTransaction: {
-    checkin(
-      playerWallet: PromiseOrValue<string>,
-      worldId: PromiseOrValue<BigNumberish>,
-      eventDefinitionId: PromiseOrValue<BigNumberish>,
-      overrides?: Overrides & { from?: PromiseOrValue<string> }
-    ): Promise<PopulatedTransaction>;
-
-    getCheckinCountFromPlayer(
-      playerWallet: PromiseOrValue<string>,
-      worldId: PromiseOrValue<BigNumberish>,
-      eventDefinitionId: PromiseOrValue<BigNumberish>,
-      overrides?: CallOverrides
-    ): Promise<PopulatedTransaction>;
-
-    getEventDefinition(
-      worldId: PromiseOrValue<BigNumberish>,
-      eventDefinitionId: PromiseOrValue<BigNumberish>,
-      overrides?: CallOverrides
-    ): Promise<PopulatedTransaction>;
-
-    getLatestCheckinTimestampFromPlayer(
-      playerWallet: PromiseOrValue<string>,
-      worldId: PromiseOrValue<BigNumberish>,
-      eventDefinitionId: PromiseOrValue<BigNumberish>,
-      overrides?: CallOverrides
-    ): Promise<PopulatedTransaction>;
-
-    validateCheckin(
-      playerWallet: PromiseOrValue<string>,
-      worldId: PromiseOrValue<BigNumberish>,
-      eventDefinitionId: PromiseOrValue<BigNumberish>,
-      overrides?: CallOverrides
-    ): Promise<PopulatedTransaction>;
+    "Checkin(address,uint256,uint256,uint256,uint256)": TypedContractEvent<
+      CheckinEvent.InputTuple,
+      CheckinEvent.OutputTuple,
+      CheckinEvent.OutputObject
+    >;
+    Checkin: TypedContractEvent<
+      CheckinEvent.InputTuple,
+      CheckinEvent.OutputTuple,
+      CheckinEvent.OutputObject
+    >;
   };
 }

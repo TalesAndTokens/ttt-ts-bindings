@@ -2,8 +2,7 @@
 /* tslint:disable */
 /* eslint-disable */
 
-import { Contract, Signer, utils } from "ethers";
-import type { Provider } from "@ethersproject/providers";
+import { Contract, Interface, type ContractRunner } from "ethers";
 import type {
   IItemPackReveal,
   IItemPackRevealInterface,
@@ -181,12 +180,12 @@ const _abi = [
 export class IItemPackReveal__factory {
   static readonly abi = _abi;
   static createInterface(): IItemPackRevealInterface {
-    return new utils.Interface(_abi) as IItemPackRevealInterface;
+    return new Interface(_abi) as IItemPackRevealInterface;
   }
   static connect(
     address: string,
-    signerOrProvider: Signer | Provider
+    runner?: ContractRunner | null
   ): IItemPackReveal {
-    return new Contract(address, _abi, signerOrProvider) as IItemPackReveal;
+    return new Contract(address, _abi, runner) as unknown as IItemPackReveal;
   }
 }

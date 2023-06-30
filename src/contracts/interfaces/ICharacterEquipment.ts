@@ -3,49 +3,44 @@
 /* eslint-disable */
 import type {
   BaseContract,
-  BigNumber,
   BigNumberish,
   BytesLike,
-  CallOverrides,
-  ContractTransaction,
-  Overrides,
-  PopulatedTransaction,
-  Signer,
-  utils,
-} from "ethers";
-import type {
   FunctionFragment,
   Result,
+  Interface,
   EventFragment,
-} from "@ethersproject/abi";
-import type { Listener, Provider } from "@ethersproject/providers";
+  ContractRunner,
+  ContractMethod,
+  Listener,
+} from "ethers";
 import type {
-  TypedEventFilter,
-  TypedEvent,
+  TypedContractEvent,
+  TypedDeferredTopicFilter,
+  TypedEventLog,
+  TypedLogDescription,
   TypedListener,
-  OnEvent,
-  PromiseOrValue,
+  TypedContractMethod,
 } from "../../common";
 
 export declare namespace ICharacterEquipment {
   export type EquipValidationResultStruct = {
-    validWorldId: PromiseOrValue<boolean>;
-    validTokenId: PromiseOrValue<boolean>;
-    validItemDefinitionIdLength: PromiseOrValue<boolean>;
-    validSlots: PromiseOrValue<boolean>[];
-    validItemDefinitionIds: PromiseOrValue<boolean>[];
-    equipableItems: PromiseOrValue<boolean>[];
-    validItemCounts: PromiseOrValue<boolean>[];
+    validWorldId: boolean;
+    validTokenId: boolean;
+    validItemDefinitionIdLength: boolean;
+    validSlots: boolean[];
+    validItemDefinitionIds: boolean[];
+    equipableItems: boolean[];
+    validItemCounts: boolean[];
   };
 
   export type EquipValidationResultStructOutput = [
-    boolean,
-    boolean,
-    boolean,
-    boolean[],
-    boolean[],
-    boolean[],
-    boolean[]
+    validWorldId: boolean,
+    validTokenId: boolean,
+    validItemDefinitionIdLength: boolean,
+    validSlots: boolean[],
+    validItemDefinitionIds: boolean[],
+    equipableItems: boolean[],
+    validItemCounts: boolean[]
   ] & {
     validWorldId: boolean;
     validTokenId: boolean;
@@ -57,36 +52,24 @@ export declare namespace ICharacterEquipment {
   };
 }
 
-export interface ICharacterEquipmentInterface extends utils.Interface {
-  functions: {
-    "equip(uint256,uint256,uint256[])": FunctionFragment;
-    "getEquipments(uint256,uint256)": FunctionFragment;
-    "validateEquip(uint256,uint256,uint256[])": FunctionFragment;
-  };
-
+export interface ICharacterEquipmentInterface extends Interface {
   getFunction(
-    nameOrSignatureOrTopic: "equip" | "getEquipments" | "validateEquip"
+    nameOrSignature: "equip" | "getEquipments" | "validateEquip"
   ): FunctionFragment;
+
+  getEvent(nameOrSignatureOrTopic: "Equip"): EventFragment;
 
   encodeFunctionData(
     functionFragment: "equip",
-    values: [
-      PromiseOrValue<BigNumberish>,
-      PromiseOrValue<BigNumberish>,
-      PromiseOrValue<BigNumberish>[]
-    ]
+    values: [BigNumberish, BigNumberish, BigNumberish[]]
   ): string;
   encodeFunctionData(
     functionFragment: "getEquipments",
-    values: [PromiseOrValue<BigNumberish>, PromiseOrValue<BigNumberish>]
+    values: [BigNumberish, BigNumberish]
   ): string;
   encodeFunctionData(
     functionFragment: "validateEquip",
-    values: [
-      PromiseOrValue<BigNumberish>,
-      PromiseOrValue<BigNumberish>,
-      PromiseOrValue<BigNumberish>[]
-    ]
+    values: [BigNumberish, BigNumberish, BigNumberish[]]
   ): string;
 
   decodeFunctionResult(functionFragment: "equip", data: BytesLike): Result;
@@ -98,170 +81,151 @@ export interface ICharacterEquipmentInterface extends utils.Interface {
     functionFragment: "validateEquip",
     data: BytesLike
   ): Result;
-
-  events: {
-    "Equip(uint256,uint256,uint256[])": EventFragment;
-  };
-
-  getEvent(nameOrSignatureOrTopic: "Equip"): EventFragment;
 }
 
-export interface EquipEventObject {
-  worldId: BigNumber;
-  tokenId: BigNumber;
-  itemIds: BigNumber[];
+export namespace EquipEvent {
+  export type InputTuple = [
+    worldId: BigNumberish,
+    tokenId: BigNumberish,
+    itemIds: BigNumberish[]
+  ];
+  export type OutputTuple = [
+    worldId: bigint,
+    tokenId: bigint,
+    itemIds: bigint[]
+  ];
+  export interface OutputObject {
+    worldId: bigint;
+    tokenId: bigint;
+    itemIds: bigint[];
+  }
+  export type Event = TypedContractEvent<InputTuple, OutputTuple, OutputObject>;
+  export type Filter = TypedDeferredTopicFilter<Event>;
+  export type Log = TypedEventLog<Event>;
+  export type LogDescription = TypedLogDescription<Event>;
 }
-export type EquipEvent = TypedEvent<
-  [BigNumber, BigNumber, BigNumber[]],
-  EquipEventObject
->;
-
-export type EquipEventFilter = TypedEventFilter<EquipEvent>;
 
 export interface ICharacterEquipment extends BaseContract {
-  connect(signerOrProvider: Signer | Provider | string): this;
-  attach(addressOrName: string): this;
-  deployed(): Promise<this>;
+  connect(runner?: ContractRunner | null): ICharacterEquipment;
+  waitForDeployment(): Promise<this>;
 
   interface: ICharacterEquipmentInterface;
 
-  queryFilter<TEvent extends TypedEvent>(
-    event: TypedEventFilter<TEvent>,
+  queryFilter<TCEvent extends TypedContractEvent>(
+    event: TCEvent,
     fromBlockOrBlockhash?: string | number | undefined,
     toBlock?: string | number | undefined
-  ): Promise<Array<TEvent>>;
+  ): Promise<Array<TypedEventLog<TCEvent>>>;
+  queryFilter<TCEvent extends TypedContractEvent>(
+    filter: TypedDeferredTopicFilter<TCEvent>,
+    fromBlockOrBlockhash?: string | number | undefined,
+    toBlock?: string | number | undefined
+  ): Promise<Array<TypedEventLog<TCEvent>>>;
 
-  listeners<TEvent extends TypedEvent>(
-    eventFilter?: TypedEventFilter<TEvent>
-  ): Array<TypedListener<TEvent>>;
-  listeners(eventName?: string): Array<Listener>;
-  removeAllListeners<TEvent extends TypedEvent>(
-    eventFilter: TypedEventFilter<TEvent>
-  ): this;
-  removeAllListeners(eventName?: string): this;
-  off: OnEvent<this>;
-  on: OnEvent<this>;
-  once: OnEvent<this>;
-  removeListener: OnEvent<this>;
+  on<TCEvent extends TypedContractEvent>(
+    event: TCEvent,
+    listener: TypedListener<TCEvent>
+  ): Promise<this>;
+  on<TCEvent extends TypedContractEvent>(
+    filter: TypedDeferredTopicFilter<TCEvent>,
+    listener: TypedListener<TCEvent>
+  ): Promise<this>;
 
-  functions: {
-    equip(
-      worldId: PromiseOrValue<BigNumberish>,
-      tokenId: PromiseOrValue<BigNumberish>,
-      itemDefinitionIds: PromiseOrValue<BigNumberish>[],
-      overrides?: Overrides & { from?: PromiseOrValue<string> }
-    ): Promise<ContractTransaction>;
+  once<TCEvent extends TypedContractEvent>(
+    event: TCEvent,
+    listener: TypedListener<TCEvent>
+  ): Promise<this>;
+  once<TCEvent extends TypedContractEvent>(
+    filter: TypedDeferredTopicFilter<TCEvent>,
+    listener: TypedListener<TCEvent>
+  ): Promise<this>;
 
-    getEquipments(
-      worldId: PromiseOrValue<BigNumberish>,
-      tokenId: PromiseOrValue<BigNumberish>,
-      overrides?: CallOverrides
-    ): Promise<[BigNumber[]]>;
+  listeners<TCEvent extends TypedContractEvent>(
+    event: TCEvent
+  ): Promise<Array<TypedListener<TCEvent>>>;
+  listeners(eventName?: string): Promise<Array<Listener>>;
+  removeAllListeners<TCEvent extends TypedContractEvent>(
+    event?: TCEvent
+  ): Promise<this>;
 
-    validateEquip(
-      worldId: PromiseOrValue<BigNumberish>,
-      tokenId: PromiseOrValue<BigNumberish>,
-      itemDefinitionIds: PromiseOrValue<BigNumberish>[],
-      overrides?: CallOverrides
-    ): Promise<[ICharacterEquipment.EquipValidationResultStructOutput]>;
-  };
+  equip: TypedContractMethod<
+    [
+      worldId: BigNumberish,
+      tokenId: BigNumberish,
+      itemDefinitionIds: BigNumberish[]
+    ],
+    [void],
+    "nonpayable"
+  >;
 
-  equip(
-    worldId: PromiseOrValue<BigNumberish>,
-    tokenId: PromiseOrValue<BigNumberish>,
-    itemDefinitionIds: PromiseOrValue<BigNumberish>[],
-    overrides?: Overrides & { from?: PromiseOrValue<string> }
-  ): Promise<ContractTransaction>;
+  getEquipments: TypedContractMethod<
+    [worldId: BigNumberish, tokenId: BigNumberish],
+    [bigint[]],
+    "view"
+  >;
 
-  getEquipments(
-    worldId: PromiseOrValue<BigNumberish>,
-    tokenId: PromiseOrValue<BigNumberish>,
-    overrides?: CallOverrides
-  ): Promise<BigNumber[]>;
+  validateEquip: TypedContractMethod<
+    [
+      worldId: BigNumberish,
+      tokenId: BigNumberish,
+      itemDefinitionIds: BigNumberish[]
+    ],
+    [ICharacterEquipment.EquipValidationResultStructOutput],
+    "view"
+  >;
 
-  validateEquip(
-    worldId: PromiseOrValue<BigNumberish>,
-    tokenId: PromiseOrValue<BigNumberish>,
-    itemDefinitionIds: PromiseOrValue<BigNumberish>[],
-    overrides?: CallOverrides
-  ): Promise<ICharacterEquipment.EquipValidationResultStructOutput>;
+  getFunction<T extends ContractMethod = ContractMethod>(
+    key: string | FunctionFragment
+  ): T;
 
-  callStatic: {
-    equip(
-      worldId: PromiseOrValue<BigNumberish>,
-      tokenId: PromiseOrValue<BigNumberish>,
-      itemDefinitionIds: PromiseOrValue<BigNumberish>[],
-      overrides?: CallOverrides
-    ): Promise<void>;
+  getFunction(
+    nameOrSignature: "equip"
+  ): TypedContractMethod<
+    [
+      worldId: BigNumberish,
+      tokenId: BigNumberish,
+      itemDefinitionIds: BigNumberish[]
+    ],
+    [void],
+    "nonpayable"
+  >;
+  getFunction(
+    nameOrSignature: "getEquipments"
+  ): TypedContractMethod<
+    [worldId: BigNumberish, tokenId: BigNumberish],
+    [bigint[]],
+    "view"
+  >;
+  getFunction(
+    nameOrSignature: "validateEquip"
+  ): TypedContractMethod<
+    [
+      worldId: BigNumberish,
+      tokenId: BigNumberish,
+      itemDefinitionIds: BigNumberish[]
+    ],
+    [ICharacterEquipment.EquipValidationResultStructOutput],
+    "view"
+  >;
 
-    getEquipments(
-      worldId: PromiseOrValue<BigNumberish>,
-      tokenId: PromiseOrValue<BigNumberish>,
-      overrides?: CallOverrides
-    ): Promise<BigNumber[]>;
-
-    validateEquip(
-      worldId: PromiseOrValue<BigNumberish>,
-      tokenId: PromiseOrValue<BigNumberish>,
-      itemDefinitionIds: PromiseOrValue<BigNumberish>[],
-      overrides?: CallOverrides
-    ): Promise<ICharacterEquipment.EquipValidationResultStructOutput>;
-  };
+  getEvent(
+    key: "Equip"
+  ): TypedContractEvent<
+    EquipEvent.InputTuple,
+    EquipEvent.OutputTuple,
+    EquipEvent.OutputObject
+  >;
 
   filters: {
-    "Equip(uint256,uint256,uint256[])"(
-      worldId?: PromiseOrValue<BigNumberish> | null,
-      tokenId?: PromiseOrValue<BigNumberish> | null,
-      itemIds?: null
-    ): EquipEventFilter;
-    Equip(
-      worldId?: PromiseOrValue<BigNumberish> | null,
-      tokenId?: PromiseOrValue<BigNumberish> | null,
-      itemIds?: null
-    ): EquipEventFilter;
-  };
-
-  estimateGas: {
-    equip(
-      worldId: PromiseOrValue<BigNumberish>,
-      tokenId: PromiseOrValue<BigNumberish>,
-      itemDefinitionIds: PromiseOrValue<BigNumberish>[],
-      overrides?: Overrides & { from?: PromiseOrValue<string> }
-    ): Promise<BigNumber>;
-
-    getEquipments(
-      worldId: PromiseOrValue<BigNumberish>,
-      tokenId: PromiseOrValue<BigNumberish>,
-      overrides?: CallOverrides
-    ): Promise<BigNumber>;
-
-    validateEquip(
-      worldId: PromiseOrValue<BigNumberish>,
-      tokenId: PromiseOrValue<BigNumberish>,
-      itemDefinitionIds: PromiseOrValue<BigNumberish>[],
-      overrides?: CallOverrides
-    ): Promise<BigNumber>;
-  };
-
-  populateTransaction: {
-    equip(
-      worldId: PromiseOrValue<BigNumberish>,
-      tokenId: PromiseOrValue<BigNumberish>,
-      itemDefinitionIds: PromiseOrValue<BigNumberish>[],
-      overrides?: Overrides & { from?: PromiseOrValue<string> }
-    ): Promise<PopulatedTransaction>;
-
-    getEquipments(
-      worldId: PromiseOrValue<BigNumberish>,
-      tokenId: PromiseOrValue<BigNumberish>,
-      overrides?: CallOverrides
-    ): Promise<PopulatedTransaction>;
-
-    validateEquip(
-      worldId: PromiseOrValue<BigNumberish>,
-      tokenId: PromiseOrValue<BigNumberish>,
-      itemDefinitionIds: PromiseOrValue<BigNumberish>[],
-      overrides?: CallOverrides
-    ): Promise<PopulatedTransaction>;
+    "Equip(uint256,uint256,uint256[])": TypedContractEvent<
+      EquipEvent.InputTuple,
+      EquipEvent.OutputTuple,
+      EquipEvent.OutputObject
+    >;
+    Equip: TypedContractEvent<
+      EquipEvent.InputTuple,
+      EquipEvent.OutputTuple,
+      EquipEvent.OutputObject
+    >;
   };
 }

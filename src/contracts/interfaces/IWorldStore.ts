@@ -3,36 +3,26 @@
 /* eslint-disable */
 import type {
   BaseContract,
-  BigNumber,
   BigNumberish,
   BytesLike,
-  CallOverrides,
-  PopulatedTransaction,
-  Signer,
-  utils,
+  FunctionFragment,
+  Result,
+  Interface,
+  ContractRunner,
+  ContractMethod,
+  Listener,
 } from "ethers";
-import type { FunctionFragment, Result } from "@ethersproject/abi";
-import type { Listener, Provider } from "@ethersproject/providers";
 import type {
-  TypedEventFilter,
-  TypedEvent,
+  TypedContractEvent,
+  TypedDeferredTopicFilter,
+  TypedEventLog,
   TypedListener,
-  OnEvent,
-  PromiseOrValue,
+  TypedContractMethod,
 } from "../../common";
 
-export interface IWorldStoreInterface extends utils.Interface {
-  functions: {
-    "getDataContract(uint256,string)": FunctionFragment;
-    "getDataContractKeys()": FunctionFragment;
-    "getDefinition(uint256,string)": FunctionFragment;
-    "getDefinitionKeys()": FunctionFragment;
-    "getTokenContract(uint256,string)": FunctionFragment;
-    "getTokenContractKeys()": FunctionFragment;
-  };
-
+export interface IWorldStoreInterface extends Interface {
   getFunction(
-    nameOrSignatureOrTopic:
+    nameOrSignature:
       | "getDataContract"
       | "getDataContractKeys"
       | "getDefinition"
@@ -43,7 +33,7 @@ export interface IWorldStoreInterface extends utils.Interface {
 
   encodeFunctionData(
     functionFragment: "getDataContract",
-    values: [PromiseOrValue<BigNumberish>, PromiseOrValue<string>]
+    values: [BigNumberish, string]
   ): string;
   encodeFunctionData(
     functionFragment: "getDataContractKeys",
@@ -51,7 +41,7 @@ export interface IWorldStoreInterface extends utils.Interface {
   ): string;
   encodeFunctionData(
     functionFragment: "getDefinition",
-    values: [PromiseOrValue<BigNumberish>, PromiseOrValue<string>]
+    values: [BigNumberish, string]
   ): string;
   encodeFunctionData(
     functionFragment: "getDefinitionKeys",
@@ -59,7 +49,7 @@ export interface IWorldStoreInterface extends utils.Interface {
   ): string;
   encodeFunctionData(
     functionFragment: "getTokenContract",
-    values: [PromiseOrValue<BigNumberish>, PromiseOrValue<string>]
+    values: [BigNumberish, string]
   ): string;
   encodeFunctionData(
     functionFragment: "getTokenContractKeys",
@@ -90,167 +80,109 @@ export interface IWorldStoreInterface extends utils.Interface {
     functionFragment: "getTokenContractKeys",
     data: BytesLike
   ): Result;
-
-  events: {};
 }
 
 export interface IWorldStore extends BaseContract {
-  connect(signerOrProvider: Signer | Provider | string): this;
-  attach(addressOrName: string): this;
-  deployed(): Promise<this>;
+  connect(runner?: ContractRunner | null): IWorldStore;
+  waitForDeployment(): Promise<this>;
 
   interface: IWorldStoreInterface;
 
-  queryFilter<TEvent extends TypedEvent>(
-    event: TypedEventFilter<TEvent>,
+  queryFilter<TCEvent extends TypedContractEvent>(
+    event: TCEvent,
     fromBlockOrBlockhash?: string | number | undefined,
     toBlock?: string | number | undefined
-  ): Promise<Array<TEvent>>;
+  ): Promise<Array<TypedEventLog<TCEvent>>>;
+  queryFilter<TCEvent extends TypedContractEvent>(
+    filter: TypedDeferredTopicFilter<TCEvent>,
+    fromBlockOrBlockhash?: string | number | undefined,
+    toBlock?: string | number | undefined
+  ): Promise<Array<TypedEventLog<TCEvent>>>;
 
-  listeners<TEvent extends TypedEvent>(
-    eventFilter?: TypedEventFilter<TEvent>
-  ): Array<TypedListener<TEvent>>;
-  listeners(eventName?: string): Array<Listener>;
-  removeAllListeners<TEvent extends TypedEvent>(
-    eventFilter: TypedEventFilter<TEvent>
-  ): this;
-  removeAllListeners(eventName?: string): this;
-  off: OnEvent<this>;
-  on: OnEvent<this>;
-  once: OnEvent<this>;
-  removeListener: OnEvent<this>;
+  on<TCEvent extends TypedContractEvent>(
+    event: TCEvent,
+    listener: TypedListener<TCEvent>
+  ): Promise<this>;
+  on<TCEvent extends TypedContractEvent>(
+    filter: TypedDeferredTopicFilter<TCEvent>,
+    listener: TypedListener<TCEvent>
+  ): Promise<this>;
 
-  functions: {
-    getDataContract(
-      worldId: PromiseOrValue<BigNumberish>,
-      key: PromiseOrValue<string>,
-      overrides?: CallOverrides
-    ): Promise<[string]>;
+  once<TCEvent extends TypedContractEvent>(
+    event: TCEvent,
+    listener: TypedListener<TCEvent>
+  ): Promise<this>;
+  once<TCEvent extends TypedContractEvent>(
+    filter: TypedDeferredTopicFilter<TCEvent>,
+    listener: TypedListener<TCEvent>
+  ): Promise<this>;
 
-    getDataContractKeys(overrides?: CallOverrides): Promise<[string[]]>;
+  listeners<TCEvent extends TypedContractEvent>(
+    event: TCEvent
+  ): Promise<Array<TypedListener<TCEvent>>>;
+  listeners(eventName?: string): Promise<Array<Listener>>;
+  removeAllListeners<TCEvent extends TypedContractEvent>(
+    event?: TCEvent
+  ): Promise<this>;
 
-    getDefinition(
-      worldId: PromiseOrValue<BigNumberish>,
-      key: PromiseOrValue<string>,
-      overrides?: CallOverrides
-    ): Promise<[string]>;
+  getDataContract: TypedContractMethod<
+    [worldId: BigNumberish, key: string],
+    [string],
+    "view"
+  >;
 
-    getDefinitionKeys(overrides?: CallOverrides): Promise<[string[]]>;
+  getDataContractKeys: TypedContractMethod<[], [string[]], "view">;
 
-    getTokenContract(
-      worldId: PromiseOrValue<BigNumberish>,
-      key: PromiseOrValue<string>,
-      overrides?: CallOverrides
-    ): Promise<[string]>;
+  getDefinition: TypedContractMethod<
+    [worldId: BigNumberish, key: string],
+    [string],
+    "view"
+  >;
 
-    getTokenContractKeys(overrides?: CallOverrides): Promise<[string[]]>;
-  };
+  getDefinitionKeys: TypedContractMethod<[], [string[]], "view">;
 
-  getDataContract(
-    worldId: PromiseOrValue<BigNumberish>,
-    key: PromiseOrValue<string>,
-    overrides?: CallOverrides
-  ): Promise<string>;
+  getTokenContract: TypedContractMethod<
+    [worldId: BigNumberish, key: string],
+    [string],
+    "view"
+  >;
 
-  getDataContractKeys(overrides?: CallOverrides): Promise<string[]>;
+  getTokenContractKeys: TypedContractMethod<[], [string[]], "view">;
 
-  getDefinition(
-    worldId: PromiseOrValue<BigNumberish>,
-    key: PromiseOrValue<string>,
-    overrides?: CallOverrides
-  ): Promise<string>;
+  getFunction<T extends ContractMethod = ContractMethod>(
+    key: string | FunctionFragment
+  ): T;
 
-  getDefinitionKeys(overrides?: CallOverrides): Promise<string[]>;
-
-  getTokenContract(
-    worldId: PromiseOrValue<BigNumberish>,
-    key: PromiseOrValue<string>,
-    overrides?: CallOverrides
-  ): Promise<string>;
-
-  getTokenContractKeys(overrides?: CallOverrides): Promise<string[]>;
-
-  callStatic: {
-    getDataContract(
-      worldId: PromiseOrValue<BigNumberish>,
-      key: PromiseOrValue<string>,
-      overrides?: CallOverrides
-    ): Promise<string>;
-
-    getDataContractKeys(overrides?: CallOverrides): Promise<string[]>;
-
-    getDefinition(
-      worldId: PromiseOrValue<BigNumberish>,
-      key: PromiseOrValue<string>,
-      overrides?: CallOverrides
-    ): Promise<string>;
-
-    getDefinitionKeys(overrides?: CallOverrides): Promise<string[]>;
-
-    getTokenContract(
-      worldId: PromiseOrValue<BigNumberish>,
-      key: PromiseOrValue<string>,
-      overrides?: CallOverrides
-    ): Promise<string>;
-
-    getTokenContractKeys(overrides?: CallOverrides): Promise<string[]>;
-  };
+  getFunction(
+    nameOrSignature: "getDataContract"
+  ): TypedContractMethod<
+    [worldId: BigNumberish, key: string],
+    [string],
+    "view"
+  >;
+  getFunction(
+    nameOrSignature: "getDataContractKeys"
+  ): TypedContractMethod<[], [string[]], "view">;
+  getFunction(
+    nameOrSignature: "getDefinition"
+  ): TypedContractMethod<
+    [worldId: BigNumberish, key: string],
+    [string],
+    "view"
+  >;
+  getFunction(
+    nameOrSignature: "getDefinitionKeys"
+  ): TypedContractMethod<[], [string[]], "view">;
+  getFunction(
+    nameOrSignature: "getTokenContract"
+  ): TypedContractMethod<
+    [worldId: BigNumberish, key: string],
+    [string],
+    "view"
+  >;
+  getFunction(
+    nameOrSignature: "getTokenContractKeys"
+  ): TypedContractMethod<[], [string[]], "view">;
 
   filters: {};
-
-  estimateGas: {
-    getDataContract(
-      worldId: PromiseOrValue<BigNumberish>,
-      key: PromiseOrValue<string>,
-      overrides?: CallOverrides
-    ): Promise<BigNumber>;
-
-    getDataContractKeys(overrides?: CallOverrides): Promise<BigNumber>;
-
-    getDefinition(
-      worldId: PromiseOrValue<BigNumberish>,
-      key: PromiseOrValue<string>,
-      overrides?: CallOverrides
-    ): Promise<BigNumber>;
-
-    getDefinitionKeys(overrides?: CallOverrides): Promise<BigNumber>;
-
-    getTokenContract(
-      worldId: PromiseOrValue<BigNumberish>,
-      key: PromiseOrValue<string>,
-      overrides?: CallOverrides
-    ): Promise<BigNumber>;
-
-    getTokenContractKeys(overrides?: CallOverrides): Promise<BigNumber>;
-  };
-
-  populateTransaction: {
-    getDataContract(
-      worldId: PromiseOrValue<BigNumberish>,
-      key: PromiseOrValue<string>,
-      overrides?: CallOverrides
-    ): Promise<PopulatedTransaction>;
-
-    getDataContractKeys(
-      overrides?: CallOverrides
-    ): Promise<PopulatedTransaction>;
-
-    getDefinition(
-      worldId: PromiseOrValue<BigNumberish>,
-      key: PromiseOrValue<string>,
-      overrides?: CallOverrides
-    ): Promise<PopulatedTransaction>;
-
-    getDefinitionKeys(overrides?: CallOverrides): Promise<PopulatedTransaction>;
-
-    getTokenContract(
-      worldId: PromiseOrValue<BigNumberish>,
-      key: PromiseOrValue<string>,
-      overrides?: CallOverrides
-    ): Promise<PopulatedTransaction>;
-
-    getTokenContractKeys(
-      overrides?: CallOverrides
-    ): Promise<PopulatedTransaction>;
-  };
 }

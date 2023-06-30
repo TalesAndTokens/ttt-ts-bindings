@@ -3,79 +3,66 @@
 /* eslint-disable */
 import type {
   BaseContract,
-  BigNumber,
   BigNumberish,
   BytesLike,
-  CallOverrides,
-  ContractTransaction,
-  Overrides,
-  PopulatedTransaction,
-  Signer,
-  utils,
-} from "ethers";
-import type {
   FunctionFragment,
   Result,
+  Interface,
   EventFragment,
-} from "@ethersproject/abi";
-import type { Listener, Provider } from "@ethersproject/providers";
+  AddressLike,
+  ContractRunner,
+  ContractMethod,
+  Listener,
+} from "ethers";
 import type {
-  TypedEventFilter,
-  TypedEvent,
+  TypedContractEvent,
+  TypedDeferredTopicFilter,
+  TypedEventLog,
+  TypedLogDescription,
   TypedListener,
-  OnEvent,
-  PromiseOrValue,
+  TypedContractMethod,
 } from "../../common";
 
 export declare namespace IItemPackReveal {
   export type ItemPackRecordStruct = {
-    itemPackId: PromiseOrValue<BigNumberish>;
-    itemPackDefinitionId: PromiseOrValue<BigNumberish>;
-    tokenId: PromiseOrValue<BigNumberish>;
+    itemPackId: BigNumberish;
+    itemPackDefinitionId: BigNumberish;
+    tokenId: BigNumberish;
   };
 
-  export type ItemPackRecordStructOutput = [BigNumber, BigNumber, BigNumber] & {
-    itemPackId: BigNumber;
-    itemPackDefinitionId: BigNumber;
-    tokenId: BigNumber;
-  };
+  export type ItemPackRecordStructOutput = [
+    itemPackId: bigint,
+    itemPackDefinitionId: bigint,
+    tokenId: bigint
+  ] & { itemPackId: bigint; itemPackDefinitionId: bigint; tokenId: bigint };
 }
 
-export interface IItemPackRevealInterface extends utils.Interface {
-  functions: {
-    "getItemPacks(address,uint256)": FunctionFragment;
-    "getItemPacksAssociatedWithNFT(address,uint256)": FunctionFragment;
-    "isRevealed(uint256,uint256)": FunctionFragment;
-    "reveal(uint256,uint256,uint256)": FunctionFragment;
-  };
-
+export interface IItemPackRevealInterface extends Interface {
   getFunction(
-    nameOrSignatureOrTopic:
+    nameOrSignature:
       | "getItemPacks"
       | "getItemPacksAssociatedWithNFT"
       | "isRevealed"
       | "reveal"
   ): FunctionFragment;
 
+  getEvent(nameOrSignatureOrTopic: "RevealItemPack"): EventFragment;
+
   encodeFunctionData(
     functionFragment: "getItemPacks",
-    values: [PromiseOrValue<string>, PromiseOrValue<BigNumberish>]
+    values: [AddressLike, BigNumberish]
   ): string;
   encodeFunctionData(
     functionFragment: "getItemPacksAssociatedWithNFT",
-    values: [PromiseOrValue<string>, PromiseOrValue<BigNumberish>]
+    values: [AddressLike, BigNumberish]
   ): string;
   encodeFunctionData(
     functionFragment: "isRevealed",
-    values: [PromiseOrValue<BigNumberish>, PromiseOrValue<BigNumberish>]
+    values: [BigNumberish, BigNumberish]
   ): string;
   encodeFunctionData(
     functionFragment: "reveal",
-    values: [
-      PromiseOrValue<BigNumberish>,
-      PromiseOrValue<BigNumberish>,
-      PromiseOrValue<BigNumberish>
-    ]
+    values: [BigNumberish, BigNumberish, BigNumberish]
   ): string;
 
   decodeFunctionResult(
@@ -88,201 +75,154 @@ export interface IItemPackRevealInterface extends utils.Interface {
   ): Result;
   decodeFunctionResult(functionFragment: "isRevealed", data: BytesLike): Result;
   decodeFunctionResult(functionFragment: "reveal", data: BytesLike): Result;
-
-  events: {
-    "RevealItemPack(uint256,uint256,uint256,uint256[],int64[])": EventFragment;
-  };
-
-  getEvent(nameOrSignatureOrTopic: "RevealItemPack"): EventFragment;
 }
 
-export interface RevealItemPackEventObject {
-  worldId: BigNumber;
-  tokenId: BigNumber;
-  itemPackId: BigNumber;
-  itemDefinitionIds: BigNumber[];
-  amounts: BigNumber[];
+export namespace RevealItemPackEvent {
+  export type InputTuple = [
+    worldId: BigNumberish,
+    tokenId: BigNumberish,
+    itemPackId: BigNumberish,
+    itemDefinitionIds: BigNumberish[],
+    amounts: BigNumberish[]
+  ];
+  export type OutputTuple = [
+    worldId: bigint,
+    tokenId: bigint,
+    itemPackId: bigint,
+    itemDefinitionIds: bigint[],
+    amounts: bigint[]
+  ];
+  export interface OutputObject {
+    worldId: bigint;
+    tokenId: bigint;
+    itemPackId: bigint;
+    itemDefinitionIds: bigint[];
+    amounts: bigint[];
+  }
+  export type Event = TypedContractEvent<InputTuple, OutputTuple, OutputObject>;
+  export type Filter = TypedDeferredTopicFilter<Event>;
+  export type Log = TypedEventLog<Event>;
+  export type LogDescription = TypedLogDescription<Event>;
 }
-export type RevealItemPackEvent = TypedEvent<
-  [BigNumber, BigNumber, BigNumber, BigNumber[], BigNumber[]],
-  RevealItemPackEventObject
->;
-
-export type RevealItemPackEventFilter = TypedEventFilter<RevealItemPackEvent>;
 
 export interface IItemPackReveal extends BaseContract {
-  connect(signerOrProvider: Signer | Provider | string): this;
-  attach(addressOrName: string): this;
-  deployed(): Promise<this>;
+  connect(runner?: ContractRunner | null): IItemPackReveal;
+  waitForDeployment(): Promise<this>;
 
   interface: IItemPackRevealInterface;
 
-  queryFilter<TEvent extends TypedEvent>(
-    event: TypedEventFilter<TEvent>,
+  queryFilter<TCEvent extends TypedContractEvent>(
+    event: TCEvent,
     fromBlockOrBlockhash?: string | number | undefined,
     toBlock?: string | number | undefined
-  ): Promise<Array<TEvent>>;
+  ): Promise<Array<TypedEventLog<TCEvent>>>;
+  queryFilter<TCEvent extends TypedContractEvent>(
+    filter: TypedDeferredTopicFilter<TCEvent>,
+    fromBlockOrBlockhash?: string | number | undefined,
+    toBlock?: string | number | undefined
+  ): Promise<Array<TypedEventLog<TCEvent>>>;
 
-  listeners<TEvent extends TypedEvent>(
-    eventFilter?: TypedEventFilter<TEvent>
-  ): Array<TypedListener<TEvent>>;
-  listeners(eventName?: string): Array<Listener>;
-  removeAllListeners<TEvent extends TypedEvent>(
-    eventFilter: TypedEventFilter<TEvent>
-  ): this;
-  removeAllListeners(eventName?: string): this;
-  off: OnEvent<this>;
-  on: OnEvent<this>;
-  once: OnEvent<this>;
-  removeListener: OnEvent<this>;
+  on<TCEvent extends TypedContractEvent>(
+    event: TCEvent,
+    listener: TypedListener<TCEvent>
+  ): Promise<this>;
+  on<TCEvent extends TypedContractEvent>(
+    filter: TypedDeferredTopicFilter<TCEvent>,
+    listener: TypedListener<TCEvent>
+  ): Promise<this>;
 
-  functions: {
-    getItemPacks(
-      playerWallet: PromiseOrValue<string>,
-      worldId: PromiseOrValue<BigNumberish>,
-      overrides?: CallOverrides
-    ): Promise<[IItemPackReveal.ItemPackRecordStructOutput[]]>;
+  once<TCEvent extends TypedContractEvent>(
+    event: TCEvent,
+    listener: TypedListener<TCEvent>
+  ): Promise<this>;
+  once<TCEvent extends TypedContractEvent>(
+    filter: TypedDeferredTopicFilter<TCEvent>,
+    listener: TypedListener<TCEvent>
+  ): Promise<this>;
 
-    getItemPacksAssociatedWithNFT(
-      playerWallet: PromiseOrValue<string>,
-      worldId: PromiseOrValue<BigNumberish>,
-      overrides?: CallOverrides
-    ): Promise<[IItemPackReveal.ItemPackRecordStructOutput[]]>;
+  listeners<TCEvent extends TypedContractEvent>(
+    event: TCEvent
+  ): Promise<Array<TypedListener<TCEvent>>>;
+  listeners(eventName?: string): Promise<Array<Listener>>;
+  removeAllListeners<TCEvent extends TypedContractEvent>(
+    event?: TCEvent
+  ): Promise<this>;
 
-    isRevealed(
-      worldId: PromiseOrValue<BigNumberish>,
-      itemPackId: PromiseOrValue<BigNumberish>,
-      overrides?: CallOverrides
-    ): Promise<[boolean]>;
+  getItemPacks: TypedContractMethod<
+    [playerWallet: AddressLike, worldId: BigNumberish],
+    [IItemPackReveal.ItemPackRecordStructOutput[]],
+    "view"
+  >;
 
-    reveal(
-      worldId: PromiseOrValue<BigNumberish>,
-      tokenId: PromiseOrValue<BigNumberish>,
-      itemPackId: PromiseOrValue<BigNumberish>,
-      overrides?: Overrides & { from?: PromiseOrValue<string> }
-    ): Promise<ContractTransaction>;
-  };
+  getItemPacksAssociatedWithNFT: TypedContractMethod<
+    [playerWallet: AddressLike, worldId: BigNumberish],
+    [IItemPackReveal.ItemPackRecordStructOutput[]],
+    "view"
+  >;
 
-  getItemPacks(
-    playerWallet: PromiseOrValue<string>,
-    worldId: PromiseOrValue<BigNumberish>,
-    overrides?: CallOverrides
-  ): Promise<IItemPackReveal.ItemPackRecordStructOutput[]>;
+  isRevealed: TypedContractMethod<
+    [worldId: BigNumberish, itemPackId: BigNumberish],
+    [boolean],
+    "view"
+  >;
 
-  getItemPacksAssociatedWithNFT(
-    playerWallet: PromiseOrValue<string>,
-    worldId: PromiseOrValue<BigNumberish>,
-    overrides?: CallOverrides
-  ): Promise<IItemPackReveal.ItemPackRecordStructOutput[]>;
+  reveal: TypedContractMethod<
+    [worldId: BigNumberish, tokenId: BigNumberish, itemPackId: BigNumberish],
+    [void],
+    "nonpayable"
+  >;
 
-  isRevealed(
-    worldId: PromiseOrValue<BigNumberish>,
-    itemPackId: PromiseOrValue<BigNumberish>,
-    overrides?: CallOverrides
-  ): Promise<boolean>;
+  getFunction<T extends ContractMethod = ContractMethod>(
+    key: string | FunctionFragment
+  ): T;
 
-  reveal(
-    worldId: PromiseOrValue<BigNumberish>,
-    tokenId: PromiseOrValue<BigNumberish>,
-    itemPackId: PromiseOrValue<BigNumberish>,
-    overrides?: Overrides & { from?: PromiseOrValue<string> }
-  ): Promise<ContractTransaction>;
+  getFunction(
+    nameOrSignature: "getItemPacks"
+  ): TypedContractMethod<
+    [playerWallet: AddressLike, worldId: BigNumberish],
+    [IItemPackReveal.ItemPackRecordStructOutput[]],
+    "view"
+  >;
+  getFunction(
+    nameOrSignature: "getItemPacksAssociatedWithNFT"
+  ): TypedContractMethod<
+    [playerWallet: AddressLike, worldId: BigNumberish],
+    [IItemPackReveal.ItemPackRecordStructOutput[]],
+    "view"
+  >;
+  getFunction(
+    nameOrSignature: "isRevealed"
+  ): TypedContractMethod<
+    [worldId: BigNumberish, itemPackId: BigNumberish],
+    [boolean],
+    "view"
+  >;
+  getFunction(
+    nameOrSignature: "reveal"
+  ): TypedContractMethod<
+    [worldId: BigNumberish, tokenId: BigNumberish, itemPackId: BigNumberish],
+    [void],
+    "nonpayable"
+  >;
 
-  callStatic: {
-    getItemPacks(
-      playerWallet: PromiseOrValue<string>,
-      worldId: PromiseOrValue<BigNumberish>,
-      overrides?: CallOverrides
-    ): Promise<IItemPackReveal.ItemPackRecordStructOutput[]>;
-
-    getItemPacksAssociatedWithNFT(
-      playerWallet: PromiseOrValue<string>,
-      worldId: PromiseOrValue<BigNumberish>,
-      overrides?: CallOverrides
-    ): Promise<IItemPackReveal.ItemPackRecordStructOutput[]>;
-
-    isRevealed(
-      worldId: PromiseOrValue<BigNumberish>,
-      itemPackId: PromiseOrValue<BigNumberish>,
-      overrides?: CallOverrides
-    ): Promise<boolean>;
-
-    reveal(
-      worldId: PromiseOrValue<BigNumberish>,
-      tokenId: PromiseOrValue<BigNumberish>,
-      itemPackId: PromiseOrValue<BigNumberish>,
-      overrides?: CallOverrides
-    ): Promise<void>;
-  };
+  getEvent(
+    key: "RevealItemPack"
+  ): TypedContractEvent<
+    RevealItemPackEvent.InputTuple,
+    RevealItemPackEvent.OutputTuple,
+    RevealItemPackEvent.OutputObject
+  >;
 
   filters: {
-    "RevealItemPack(uint256,uint256,uint256,uint256[],int64[])"(
-      worldId?: PromiseOrValue<BigNumberish> | null,
-      tokenId?: PromiseOrValue<BigNumberish> | null,
-      itemPackId?: PromiseOrValue<BigNumberish> | null,
-      itemDefinitionIds?: null,
-      amounts?: null
-    ): RevealItemPackEventFilter;
-    RevealItemPack(
-      worldId?: PromiseOrValue<BigNumberish> | null,
-      tokenId?: PromiseOrValue<BigNumberish> | null,
-      itemPackId?: PromiseOrValue<BigNumberish> | null,
-      itemDefinitionIds?: null,
-      amounts?: null
-    ): RevealItemPackEventFilter;
-  };
-
-  estimateGas: {
-    getItemPacks(
-      playerWallet: PromiseOrValue<string>,
-      worldId: PromiseOrValue<BigNumberish>,
-      overrides?: CallOverrides
-    ): Promise<BigNumber>;
-
-    getItemPacksAssociatedWithNFT(
-      playerWallet: PromiseOrValue<string>,
-      worldId: PromiseOrValue<BigNumberish>,
-      overrides?: CallOverrides
-    ): Promise<BigNumber>;
-
-    isRevealed(
-      worldId: PromiseOrValue<BigNumberish>,
-      itemPackId: PromiseOrValue<BigNumberish>,
-      overrides?: CallOverrides
-    ): Promise<BigNumber>;
-
-    reveal(
-      worldId: PromiseOrValue<BigNumberish>,
-      tokenId: PromiseOrValue<BigNumberish>,
-      itemPackId: PromiseOrValue<BigNumberish>,
-      overrides?: Overrides & { from?: PromiseOrValue<string> }
-    ): Promise<BigNumber>;
-  };
-
-  populateTransaction: {
-    getItemPacks(
-      playerWallet: PromiseOrValue<string>,
-      worldId: PromiseOrValue<BigNumberish>,
-      overrides?: CallOverrides
-    ): Promise<PopulatedTransaction>;
-
-    getItemPacksAssociatedWithNFT(
-      playerWallet: PromiseOrValue<string>,
-      worldId: PromiseOrValue<BigNumberish>,
-      overrides?: CallOverrides
-    ): Promise<PopulatedTransaction>;
-
-    isRevealed(
-      worldId: PromiseOrValue<BigNumberish>,
-      itemPackId: PromiseOrValue<BigNumberish>,
-      overrides?: CallOverrides
-    ): Promise<PopulatedTransaction>;
-
-    reveal(
-      worldId: PromiseOrValue<BigNumberish>,
-      tokenId: PromiseOrValue<BigNumberish>,
-      itemPackId: PromiseOrValue<BigNumberish>,
-      overrides?: Overrides & { from?: PromiseOrValue<string> }
-    ): Promise<PopulatedTransaction>;
+    "RevealItemPack(uint256,uint256,uint256,uint256[],int64[])": TypedContractEvent<
+      RevealItemPackEvent.InputTuple,
+      RevealItemPackEvent.OutputTuple,
+      RevealItemPackEvent.OutputObject
+    >;
+    RevealItemPack: TypedContractEvent<
+      RevealItemPackEvent.InputTuple,
+      RevealItemPackEvent.OutputTuple,
+      RevealItemPackEvent.OutputObject
+    >;
   };
 }

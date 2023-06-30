@@ -3,53 +3,48 @@
 /* eslint-disable */
 import type {
   BaseContract,
-  BigNumber,
   BigNumberish,
   BytesLike,
-  CallOverrides,
-  ContractTransaction,
-  Overrides,
-  PopulatedTransaction,
-  Signer,
-  utils,
-} from "ethers";
-import type {
   FunctionFragment,
   Result,
+  Interface,
   EventFragment,
-} from "@ethersproject/abi";
-import type { Listener, Provider } from "@ethersproject/providers";
+  ContractRunner,
+  ContractMethod,
+  Listener,
+} from "ethers";
 import type {
-  TypedEventFilter,
-  TypedEvent,
+  TypedContractEvent,
+  TypedDeferredTopicFilter,
+  TypedEventLog,
+  TypedLogDescription,
   TypedListener,
-  OnEvent,
-  PromiseOrValue,
+  TypedContractMethod,
 } from "../../common";
 
 export declare namespace IItemExchange {
   export type ItemExchangeValidationResultStruct = {
-    checkEnabled: PromiseOrValue<boolean>;
-    checkConditionCharacter: PromiseOrValue<boolean>;
-    checkExecutableTimes: PromiseOrValue<boolean>;
-    checkExecutableTimesPerCharacter: PromiseOrValue<boolean>;
-    checkEndPeriod: PromiseOrValue<boolean>;
-    checkCharacterExecutableInterval: PromiseOrValue<boolean>;
-    checkConditionEquipments: PromiseOrValue<boolean>[];
-    checkConditionItemCounts: PromiseOrValue<BigNumberish>[];
-    checkCostItemCounts: PromiseOrValue<BigNumberish>[];
+    checkEnabled: boolean;
+    checkConditionCharacter: boolean;
+    checkExecutableTimes: boolean;
+    checkExecutableTimesPerCharacter: boolean;
+    checkEndPeriod: boolean;
+    checkCharacterExecutableInterval: boolean;
+    checkConditionEquipments: boolean[];
+    checkConditionItemCounts: BigNumberish[];
+    checkCostItemCounts: BigNumberish[];
   };
 
   export type ItemExchangeValidationResultStructOutput = [
-    boolean,
-    boolean,
-    boolean,
-    boolean,
-    boolean,
-    boolean,
-    boolean[],
-    BigNumber[],
-    BigNumber[]
+    checkEnabled: boolean,
+    checkConditionCharacter: boolean,
+    checkExecutableTimes: boolean,
+    checkExecutableTimesPerCharacter: boolean,
+    checkEndPeriod: boolean,
+    checkCharacterExecutableInterval: boolean,
+    checkConditionEquipments: boolean[],
+    checkConditionItemCounts: bigint[],
+    checkCostItemCounts: bigint[]
   ] & {
     checkEnabled: boolean;
     checkConditionCharacter: boolean;
@@ -58,174 +53,159 @@ export declare namespace IItemExchange {
     checkEndPeriod: boolean;
     checkCharacterExecutableInterval: boolean;
     checkConditionEquipments: boolean[];
-    checkConditionItemCounts: BigNumber[];
-    checkCostItemCounts: BigNumber[];
+    checkConditionItemCounts: bigint[];
+    checkCostItemCounts: bigint[];
   };
 }
 
-export interface IItemExchangeInterface extends utils.Interface {
-  functions: {
-    "exchange(uint256,uint256,uint256)": FunctionFragment;
-    "validate(uint256,uint256,uint256)": FunctionFragment;
-  };
+export interface IItemExchangeInterface extends Interface {
+  getFunction(nameOrSignature: "exchange" | "validate"): FunctionFragment;
 
-  getFunction(
-    nameOrSignatureOrTopic: "exchange" | "validate"
-  ): FunctionFragment;
+  getEvent(nameOrSignatureOrTopic: "Exchange"): EventFragment;
 
   encodeFunctionData(
     functionFragment: "exchange",
-    values: [
-      PromiseOrValue<BigNumberish>,
-      PromiseOrValue<BigNumberish>,
-      PromiseOrValue<BigNumberish>
-    ]
+    values: [BigNumberish, BigNumberish, BigNumberish]
   ): string;
   encodeFunctionData(
     functionFragment: "validate",
-    values: [
-      PromiseOrValue<BigNumberish>,
-      PromiseOrValue<BigNumberish>,
-      PromiseOrValue<BigNumberish>
-    ]
+    values: [BigNumberish, BigNumberish, BigNumberish]
   ): string;
 
   decodeFunctionResult(functionFragment: "exchange", data: BytesLike): Result;
   decodeFunctionResult(functionFragment: "validate", data: BytesLike): Result;
-
-  events: {
-    "Exchange(uint256,uint256,uint256)": EventFragment;
-  };
-
-  getEvent(nameOrSignatureOrTopic: "Exchange"): EventFragment;
 }
 
-export interface ExchangeEventObject {
-  worldId: BigNumber;
-  tokenId: BigNumber;
-  exchangeDefinitionId: BigNumber;
+export namespace ExchangeEvent {
+  export type InputTuple = [
+    worldId: BigNumberish,
+    tokenId: BigNumberish,
+    exchangeDefinitionId: BigNumberish
+  ];
+  export type OutputTuple = [
+    worldId: bigint,
+    tokenId: bigint,
+    exchangeDefinitionId: bigint
+  ];
+  export interface OutputObject {
+    worldId: bigint;
+    tokenId: bigint;
+    exchangeDefinitionId: bigint;
+  }
+  export type Event = TypedContractEvent<InputTuple, OutputTuple, OutputObject>;
+  export type Filter = TypedDeferredTopicFilter<Event>;
+  export type Log = TypedEventLog<Event>;
+  export type LogDescription = TypedLogDescription<Event>;
 }
-export type ExchangeEvent = TypedEvent<
-  [BigNumber, BigNumber, BigNumber],
-  ExchangeEventObject
->;
-
-export type ExchangeEventFilter = TypedEventFilter<ExchangeEvent>;
 
 export interface IItemExchange extends BaseContract {
-  connect(signerOrProvider: Signer | Provider | string): this;
-  attach(addressOrName: string): this;
-  deployed(): Promise<this>;
+  connect(runner?: ContractRunner | null): IItemExchange;
+  waitForDeployment(): Promise<this>;
 
   interface: IItemExchangeInterface;
 
-  queryFilter<TEvent extends TypedEvent>(
-    event: TypedEventFilter<TEvent>,
+  queryFilter<TCEvent extends TypedContractEvent>(
+    event: TCEvent,
     fromBlockOrBlockhash?: string | number | undefined,
     toBlock?: string | number | undefined
-  ): Promise<Array<TEvent>>;
+  ): Promise<Array<TypedEventLog<TCEvent>>>;
+  queryFilter<TCEvent extends TypedContractEvent>(
+    filter: TypedDeferredTopicFilter<TCEvent>,
+    fromBlockOrBlockhash?: string | number | undefined,
+    toBlock?: string | number | undefined
+  ): Promise<Array<TypedEventLog<TCEvent>>>;
 
-  listeners<TEvent extends TypedEvent>(
-    eventFilter?: TypedEventFilter<TEvent>
-  ): Array<TypedListener<TEvent>>;
-  listeners(eventName?: string): Array<Listener>;
-  removeAllListeners<TEvent extends TypedEvent>(
-    eventFilter: TypedEventFilter<TEvent>
-  ): this;
-  removeAllListeners(eventName?: string): this;
-  off: OnEvent<this>;
-  on: OnEvent<this>;
-  once: OnEvent<this>;
-  removeListener: OnEvent<this>;
+  on<TCEvent extends TypedContractEvent>(
+    event: TCEvent,
+    listener: TypedListener<TCEvent>
+  ): Promise<this>;
+  on<TCEvent extends TypedContractEvent>(
+    filter: TypedDeferredTopicFilter<TCEvent>,
+    listener: TypedListener<TCEvent>
+  ): Promise<this>;
 
-  functions: {
-    exchange(
-      worldId: PromiseOrValue<BigNumberish>,
-      tokenId: PromiseOrValue<BigNumberish>,
-      exchangeDefinitionId: PromiseOrValue<BigNumberish>,
-      overrides?: Overrides & { from?: PromiseOrValue<string> }
-    ): Promise<ContractTransaction>;
+  once<TCEvent extends TypedContractEvent>(
+    event: TCEvent,
+    listener: TypedListener<TCEvent>
+  ): Promise<this>;
+  once<TCEvent extends TypedContractEvent>(
+    filter: TypedDeferredTopicFilter<TCEvent>,
+    listener: TypedListener<TCEvent>
+  ): Promise<this>;
 
-    validate(
-      worldId: PromiseOrValue<BigNumberish>,
-      tokenId: PromiseOrValue<BigNumberish>,
-      exchangeDefinitionId: PromiseOrValue<BigNumberish>,
-      overrides?: CallOverrides
-    ): Promise<[IItemExchange.ItemExchangeValidationResultStructOutput]>;
-  };
+  listeners<TCEvent extends TypedContractEvent>(
+    event: TCEvent
+  ): Promise<Array<TypedListener<TCEvent>>>;
+  listeners(eventName?: string): Promise<Array<Listener>>;
+  removeAllListeners<TCEvent extends TypedContractEvent>(
+    event?: TCEvent
+  ): Promise<this>;
 
-  exchange(
-    worldId: PromiseOrValue<BigNumberish>,
-    tokenId: PromiseOrValue<BigNumberish>,
-    exchangeDefinitionId: PromiseOrValue<BigNumberish>,
-    overrides?: Overrides & { from?: PromiseOrValue<string> }
-  ): Promise<ContractTransaction>;
+  exchange: TypedContractMethod<
+    [
+      worldId: BigNumberish,
+      tokenId: BigNumberish,
+      exchangeDefinitionId: BigNumberish
+    ],
+    [void],
+    "nonpayable"
+  >;
 
-  validate(
-    worldId: PromiseOrValue<BigNumberish>,
-    tokenId: PromiseOrValue<BigNumberish>,
-    exchangeDefinitionId: PromiseOrValue<BigNumberish>,
-    overrides?: CallOverrides
-  ): Promise<IItemExchange.ItemExchangeValidationResultStructOutput>;
+  validate: TypedContractMethod<
+    [
+      worldId: BigNumberish,
+      tokenId: BigNumberish,
+      exchangeDefinitionId: BigNumberish
+    ],
+    [IItemExchange.ItemExchangeValidationResultStructOutput],
+    "view"
+  >;
 
-  callStatic: {
-    exchange(
-      worldId: PromiseOrValue<BigNumberish>,
-      tokenId: PromiseOrValue<BigNumberish>,
-      exchangeDefinitionId: PromiseOrValue<BigNumberish>,
-      overrides?: CallOverrides
-    ): Promise<void>;
+  getFunction<T extends ContractMethod = ContractMethod>(
+    key: string | FunctionFragment
+  ): T;
 
-    validate(
-      worldId: PromiseOrValue<BigNumberish>,
-      tokenId: PromiseOrValue<BigNumberish>,
-      exchangeDefinitionId: PromiseOrValue<BigNumberish>,
-      overrides?: CallOverrides
-    ): Promise<IItemExchange.ItemExchangeValidationResultStructOutput>;
-  };
+  getFunction(
+    nameOrSignature: "exchange"
+  ): TypedContractMethod<
+    [
+      worldId: BigNumberish,
+      tokenId: BigNumberish,
+      exchangeDefinitionId: BigNumberish
+    ],
+    [void],
+    "nonpayable"
+  >;
+  getFunction(
+    nameOrSignature: "validate"
+  ): TypedContractMethod<
+    [
+      worldId: BigNumberish,
+      tokenId: BigNumberish,
+      exchangeDefinitionId: BigNumberish
+    ],
+    [IItemExchange.ItemExchangeValidationResultStructOutput],
+    "view"
+  >;
+
+  getEvent(
+    key: "Exchange"
+  ): TypedContractEvent<
+    ExchangeEvent.InputTuple,
+    ExchangeEvent.OutputTuple,
+    ExchangeEvent.OutputObject
+  >;
 
   filters: {
-    "Exchange(uint256,uint256,uint256)"(
-      worldId?: PromiseOrValue<BigNumberish> | null,
-      tokenId?: PromiseOrValue<BigNumberish> | null,
-      exchangeDefinitionId?: null
-    ): ExchangeEventFilter;
-    Exchange(
-      worldId?: PromiseOrValue<BigNumberish> | null,
-      tokenId?: PromiseOrValue<BigNumberish> | null,
-      exchangeDefinitionId?: null
-    ): ExchangeEventFilter;
-  };
-
-  estimateGas: {
-    exchange(
-      worldId: PromiseOrValue<BigNumberish>,
-      tokenId: PromiseOrValue<BigNumberish>,
-      exchangeDefinitionId: PromiseOrValue<BigNumberish>,
-      overrides?: Overrides & { from?: PromiseOrValue<string> }
-    ): Promise<BigNumber>;
-
-    validate(
-      worldId: PromiseOrValue<BigNumberish>,
-      tokenId: PromiseOrValue<BigNumberish>,
-      exchangeDefinitionId: PromiseOrValue<BigNumberish>,
-      overrides?: CallOverrides
-    ): Promise<BigNumber>;
-  };
-
-  populateTransaction: {
-    exchange(
-      worldId: PromiseOrValue<BigNumberish>,
-      tokenId: PromiseOrValue<BigNumberish>,
-      exchangeDefinitionId: PromiseOrValue<BigNumberish>,
-      overrides?: Overrides & { from?: PromiseOrValue<string> }
-    ): Promise<PopulatedTransaction>;
-
-    validate(
-      worldId: PromiseOrValue<BigNumberish>,
-      tokenId: PromiseOrValue<BigNumberish>,
-      exchangeDefinitionId: PromiseOrValue<BigNumberish>,
-      overrides?: CallOverrides
-    ): Promise<PopulatedTransaction>;
+    "Exchange(uint256,uint256,uint256)": TypedContractEvent<
+      ExchangeEvent.InputTuple,
+      ExchangeEvent.OutputTuple,
+      ExchangeEvent.OutputObject
+    >;
+    Exchange: TypedContractEvent<
+      ExchangeEvent.InputTuple,
+      ExchangeEvent.OutputTuple,
+      ExchangeEvent.OutputObject
+    >;
   };
 }

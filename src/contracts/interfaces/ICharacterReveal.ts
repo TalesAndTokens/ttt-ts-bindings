@@ -3,59 +3,49 @@
 /* eslint-disable */
 import type {
   BaseContract,
-  BigNumber,
   BigNumberish,
   BytesLike,
-  CallOverrides,
-  ContractTransaction,
-  Overrides,
-  PopulatedTransaction,
-  Signer,
-  utils,
-} from "ethers";
-import type {
   FunctionFragment,
   Result,
+  Interface,
   EventFragment,
-} from "@ethersproject/abi";
-import type { Listener, Provider } from "@ethersproject/providers";
+  ContractRunner,
+  ContractMethod,
+  Listener,
+} from "ethers";
 import type {
-  TypedEventFilter,
-  TypedEvent,
+  TypedContractEvent,
+  TypedDeferredTopicFilter,
+  TypedEventLog,
+  TypedLogDescription,
   TypedListener,
-  OnEvent,
-  PromiseOrValue,
+  TypedContractMethod,
 } from "../../common";
 
 export declare namespace ICharacterReveal {
   export type RevealStateRecordStruct = {
-    characterDefinitionId: PromiseOrValue<BigNumberish>;
-    isRevealed: PromiseOrValue<boolean>;
-  };
-
-  export type RevealStateRecordStructOutput = [BigNumber, boolean] & {
-    characterDefinitionId: BigNumber;
+    characterDefinitionId: BigNumberish;
     isRevealed: boolean;
   };
+
+  export type RevealStateRecordStructOutput = [
+    characterDefinitionId: bigint,
+    isRevealed: boolean
+  ] & { characterDefinitionId: bigint; isRevealed: boolean };
 }
 
-export interface ICharacterRevealInterface extends utils.Interface {
-  functions: {
-    "getRevealState(uint256,uint256)": FunctionFragment;
-    "reveal(uint256,uint256)": FunctionFragment;
-  };
+export interface ICharacterRevealInterface extends Interface {
+  getFunction(nameOrSignature: "getRevealState" | "reveal"): FunctionFragment;
 
-  getFunction(
-    nameOrSignatureOrTopic: "getRevealState" | "reveal"
-  ): FunctionFragment;
+  getEvent(nameOrSignatureOrTopic: "Reveal"): EventFragment;
 
   encodeFunctionData(
     functionFragment: "getRevealState",
-    values: [PromiseOrValue<BigNumberish>, PromiseOrValue<BigNumberish>]
+    values: [BigNumberish, BigNumberish]
   ): string;
   encodeFunctionData(
     functionFragment: "reveal",
-    values: [PromiseOrValue<BigNumberish>, PromiseOrValue<BigNumberish>]
+    values: [BigNumberish, BigNumberish]
   ): string;
 
   decodeFunctionResult(
@@ -63,130 +53,122 @@ export interface ICharacterRevealInterface extends utils.Interface {
     data: BytesLike
   ): Result;
   decodeFunctionResult(functionFragment: "reveal", data: BytesLike): Result;
-
-  events: {
-    "Reveal(uint256,uint256,uint256)": EventFragment;
-  };
-
-  getEvent(nameOrSignatureOrTopic: "Reveal"): EventFragment;
 }
 
-export interface RevealEventObject {
-  worldId: BigNumber;
-  tokenId: BigNumber;
-  characterDefinitionId: BigNumber;
+export namespace RevealEvent {
+  export type InputTuple = [
+    worldId: BigNumberish,
+    tokenId: BigNumberish,
+    characterDefinitionId: BigNumberish
+  ];
+  export type OutputTuple = [
+    worldId: bigint,
+    tokenId: bigint,
+    characterDefinitionId: bigint
+  ];
+  export interface OutputObject {
+    worldId: bigint;
+    tokenId: bigint;
+    characterDefinitionId: bigint;
+  }
+  export type Event = TypedContractEvent<InputTuple, OutputTuple, OutputObject>;
+  export type Filter = TypedDeferredTopicFilter<Event>;
+  export type Log = TypedEventLog<Event>;
+  export type LogDescription = TypedLogDescription<Event>;
 }
-export type RevealEvent = TypedEvent<
-  [BigNumber, BigNumber, BigNumber],
-  RevealEventObject
->;
-
-export type RevealEventFilter = TypedEventFilter<RevealEvent>;
 
 export interface ICharacterReveal extends BaseContract {
-  connect(signerOrProvider: Signer | Provider | string): this;
-  attach(addressOrName: string): this;
-  deployed(): Promise<this>;
+  connect(runner?: ContractRunner | null): ICharacterReveal;
+  waitForDeployment(): Promise<this>;
 
   interface: ICharacterRevealInterface;
 
-  queryFilter<TEvent extends TypedEvent>(
-    event: TypedEventFilter<TEvent>,
+  queryFilter<TCEvent extends TypedContractEvent>(
+    event: TCEvent,
     fromBlockOrBlockhash?: string | number | undefined,
     toBlock?: string | number | undefined
-  ): Promise<Array<TEvent>>;
+  ): Promise<Array<TypedEventLog<TCEvent>>>;
+  queryFilter<TCEvent extends TypedContractEvent>(
+    filter: TypedDeferredTopicFilter<TCEvent>,
+    fromBlockOrBlockhash?: string | number | undefined,
+    toBlock?: string | number | undefined
+  ): Promise<Array<TypedEventLog<TCEvent>>>;
 
-  listeners<TEvent extends TypedEvent>(
-    eventFilter?: TypedEventFilter<TEvent>
-  ): Array<TypedListener<TEvent>>;
-  listeners(eventName?: string): Array<Listener>;
-  removeAllListeners<TEvent extends TypedEvent>(
-    eventFilter: TypedEventFilter<TEvent>
-  ): this;
-  removeAllListeners(eventName?: string): this;
-  off: OnEvent<this>;
-  on: OnEvent<this>;
-  once: OnEvent<this>;
-  removeListener: OnEvent<this>;
+  on<TCEvent extends TypedContractEvent>(
+    event: TCEvent,
+    listener: TypedListener<TCEvent>
+  ): Promise<this>;
+  on<TCEvent extends TypedContractEvent>(
+    filter: TypedDeferredTopicFilter<TCEvent>,
+    listener: TypedListener<TCEvent>
+  ): Promise<this>;
 
-  functions: {
-    getRevealState(
-      worldId: PromiseOrValue<BigNumberish>,
-      tokenId: PromiseOrValue<BigNumberish>,
-      overrides?: CallOverrides
-    ): Promise<[ICharacterReveal.RevealStateRecordStructOutput]>;
+  once<TCEvent extends TypedContractEvent>(
+    event: TCEvent,
+    listener: TypedListener<TCEvent>
+  ): Promise<this>;
+  once<TCEvent extends TypedContractEvent>(
+    filter: TypedDeferredTopicFilter<TCEvent>,
+    listener: TypedListener<TCEvent>
+  ): Promise<this>;
 
-    reveal(
-      worldId: PromiseOrValue<BigNumberish>,
-      tokenId: PromiseOrValue<BigNumberish>,
-      overrides?: Overrides & { from?: PromiseOrValue<string> }
-    ): Promise<ContractTransaction>;
-  };
+  listeners<TCEvent extends TypedContractEvent>(
+    event: TCEvent
+  ): Promise<Array<TypedListener<TCEvent>>>;
+  listeners(eventName?: string): Promise<Array<Listener>>;
+  removeAllListeners<TCEvent extends TypedContractEvent>(
+    event?: TCEvent
+  ): Promise<this>;
 
-  getRevealState(
-    worldId: PromiseOrValue<BigNumberish>,
-    tokenId: PromiseOrValue<BigNumberish>,
-    overrides?: CallOverrides
-  ): Promise<ICharacterReveal.RevealStateRecordStructOutput>;
+  getRevealState: TypedContractMethod<
+    [worldId: BigNumberish, tokenId: BigNumberish],
+    [ICharacterReveal.RevealStateRecordStructOutput],
+    "view"
+  >;
 
-  reveal(
-    worldId: PromiseOrValue<BigNumberish>,
-    tokenId: PromiseOrValue<BigNumberish>,
-    overrides?: Overrides & { from?: PromiseOrValue<string> }
-  ): Promise<ContractTransaction>;
+  reveal: TypedContractMethod<
+    [worldId: BigNumberish, tokenId: BigNumberish],
+    [void],
+    "nonpayable"
+  >;
 
-  callStatic: {
-    getRevealState(
-      worldId: PromiseOrValue<BigNumberish>,
-      tokenId: PromiseOrValue<BigNumberish>,
-      overrides?: CallOverrides
-    ): Promise<ICharacterReveal.RevealStateRecordStructOutput>;
+  getFunction<T extends ContractMethod = ContractMethod>(
+    key: string | FunctionFragment
+  ): T;
 
-    reveal(
-      worldId: PromiseOrValue<BigNumberish>,
-      tokenId: PromiseOrValue<BigNumberish>,
-      overrides?: CallOverrides
-    ): Promise<void>;
-  };
+  getFunction(
+    nameOrSignature: "getRevealState"
+  ): TypedContractMethod<
+    [worldId: BigNumberish, tokenId: BigNumberish],
+    [ICharacterReveal.RevealStateRecordStructOutput],
+    "view"
+  >;
+  getFunction(
+    nameOrSignature: "reveal"
+  ): TypedContractMethod<
+    [worldId: BigNumberish, tokenId: BigNumberish],
+    [void],
+    "nonpayable"
+  >;
+
+  getEvent(
+    key: "Reveal"
+  ): TypedContractEvent<
+    RevealEvent.InputTuple,
+    RevealEvent.OutputTuple,
+    RevealEvent.OutputObject
+  >;
 
   filters: {
-    "Reveal(uint256,uint256,uint256)"(
-      worldId?: PromiseOrValue<BigNumberish> | null,
-      tokenId?: PromiseOrValue<BigNumberish> | null,
-      characterDefinitionId?: PromiseOrValue<BigNumberish> | null
-    ): RevealEventFilter;
-    Reveal(
-      worldId?: PromiseOrValue<BigNumberish> | null,
-      tokenId?: PromiseOrValue<BigNumberish> | null,
-      characterDefinitionId?: PromiseOrValue<BigNumberish> | null
-    ): RevealEventFilter;
-  };
-
-  estimateGas: {
-    getRevealState(
-      worldId: PromiseOrValue<BigNumberish>,
-      tokenId: PromiseOrValue<BigNumberish>,
-      overrides?: CallOverrides
-    ): Promise<BigNumber>;
-
-    reveal(
-      worldId: PromiseOrValue<BigNumberish>,
-      tokenId: PromiseOrValue<BigNumberish>,
-      overrides?: Overrides & { from?: PromiseOrValue<string> }
-    ): Promise<BigNumber>;
-  };
-
-  populateTransaction: {
-    getRevealState(
-      worldId: PromiseOrValue<BigNumberish>,
-      tokenId: PromiseOrValue<BigNumberish>,
-      overrides?: CallOverrides
-    ): Promise<PopulatedTransaction>;
-
-    reveal(
-      worldId: PromiseOrValue<BigNumberish>,
-      tokenId: PromiseOrValue<BigNumberish>,
-      overrides?: Overrides & { from?: PromiseOrValue<string> }
-    ): Promise<PopulatedTransaction>;
+    "Reveal(uint256,uint256,uint256)": TypedContractEvent<
+      RevealEvent.InputTuple,
+      RevealEvent.OutputTuple,
+      RevealEvent.OutputObject
+    >;
+    Reveal: TypedContractEvent<
+      RevealEvent.InputTuple,
+      RevealEvent.OutputTuple,
+      RevealEvent.OutputObject
+    >;
   };
 }
