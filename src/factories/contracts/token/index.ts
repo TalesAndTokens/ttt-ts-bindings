@@ -3,3 +3,4 @@
 /* eslint-disable */
 export { IItemPackNFT__factory } from "./IItemPackNFT__factory";
 export { IL1NFT__factory } from "./IL1NFT__factory";
+export { IMintManager__factory } from "./IMintManager__factory";
