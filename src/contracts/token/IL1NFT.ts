@@ -32,6 +32,7 @@ export interface IL1NFTInterface extends Interface {
       | "getOwner"
       | "getTokens"
       | "isApprovedForAll"
+      | "mint"
       | "name"
       | "ownerOf"
       | "safeTransferFrom(address,address,uint256)"
@@ -75,6 +76,10 @@ export interface IL1NFTInterface extends Interface {
   encodeFunctionData(
     functionFragment: "isApprovedForAll",
     values: [AddressLike, AddressLike]
+  ): string;
+  encodeFunctionData(
+    functionFragment: "mint",
+    values: [AddressLike, BigNumberish]
   ): string;
   encodeFunctionData(functionFragment: "name", values?: undefined): string;
   encodeFunctionData(
@@ -123,6 +128,7 @@ export interface IL1NFTInterface extends Interface {
     functionFragment: "isApprovedForAll",
     data: BytesLike
   ): Result;
+  decodeFunctionResult(functionFragment: "mint", data: BytesLike): Result;
   decodeFunctionResult(functionFragment: "name", data: BytesLike): Result;
   decodeFunctionResult(functionFragment: "ownerOf", data: BytesLike): Result;
   decodeFunctionResult(
@@ -299,6 +305,12 @@ export interface IL1NFT extends BaseContract {
     "view"
   >;
 
+  mint: TypedContractMethod<
+    [to: AddressLike, quantity: BigNumberish],
+    [void],
+    "nonpayable"
+  >;
+
   name: TypedContractMethod<[], [string], "view">;
 
   ownerOf: TypedContractMethod<[tokenId: BigNumberish], [string], "view">;
@@ -373,6 +385,13 @@ export interface IL1NFT extends BaseContract {
     [owner: AddressLike, operator: AddressLike],
     [boolean],
     "view"
+  >;
+  getFunction(
+    nameOrSignature: "mint"
+  ): TypedContractMethod<
+    [to: AddressLike, quantity: BigNumberish],
+    [void],
+    "nonpayable"
   >;
   getFunction(
     nameOrSignature: "name"

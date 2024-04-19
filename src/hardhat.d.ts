@@ -21,6 +21,10 @@ declare module "hardhat/types/runtime" {
       signerOrOptions?: ethers.Signer | FactoryOptions
     ): Promise<Contracts.IERC4906__factory>;
     getContractFactory(
+      name: "IERC5192",
+      signerOrOptions?: ethers.Signer | FactoryOptions
+    ): Promise<Contracts.IERC5192__factory>;
+    getContractFactory(
       name: "ICharacterEquipment",
       signerOrOptions?: ethers.Signer | FactoryOptions
     ): Promise<Contracts.ICharacterEquipment__factory>;
@@ -73,6 +77,10 @@ declare module "hardhat/types/runtime" {
       signerOrOptions?: ethers.Signer | FactoryOptions
     ): Promise<Contracts.IL1NFT__factory>;
     getContractFactory(
+      name: "IMintManager",
+      signerOrOptions?: ethers.Signer | FactoryOptions
+    ): Promise<Contracts.IMintManager__factory>;
+    getContractFactory(
       name: "IERC721AQueryable",
       signerOrOptions?: ethers.Signer | FactoryOptions
     ): Promise<Contracts.IERC721AQueryable__factory>;
@@ -92,6 +100,11 @@ declare module "hardhat/types/runtime" {
       signer?: ethers.Signer
     ): Promise<Contracts.IERC4906>;
     getContractAt(
+      name: "IERC5192",
+      address: string | ethers.Addressable,
+      signer?: ethers.Signer
+    ): Promise<Contracts.IERC5192>;
+    getContractAt(
       name: "ICharacterEquipment",
       address: string | ethers.Addressable,
       signer?: ethers.Signer
@@ -156,6 +169,11 @@ declare module "hardhat/types/runtime" {
       address: string | ethers.Addressable,
       signer?: ethers.Signer
     ): Promise<Contracts.IL1NFT>;
+    getContractAt(
+      name: "IMintManager",
+      address: string | ethers.Addressable,
+      signer?: ethers.Signer
+    ): Promise<Contracts.IMintManager>;
     getContractAt(
       name: "IERC721AQueryable",
       address: string | ethers.Addressable,
@@ -176,6 +194,10 @@ declare module "hardhat/types/runtime" {
       signerOrOptions?: ethers.Signer | FactoryOptions
     ): Promise<Contracts.IERC4906>;
     deployContract(
+      name: "IERC5192",
+      signerOrOptions?: ethers.Signer | FactoryOptions
+    ): Promise<Contracts.IERC5192>;
+    deployContract(
       name: "ICharacterEquipment",
       signerOrOptions?: ethers.Signer | FactoryOptions
     ): Promise<Contracts.ICharacterEquipment>;
@@ -227,6 +249,10 @@ declare module "hardhat/types/runtime" {
       name: "IL1NFT",
       signerOrOptions?: ethers.Signer | FactoryOptions
     ): Promise<Contracts.IL1NFT>;
+    deployContract(
+      name: "IMintManager",
+      signerOrOptions?: ethers.Signer | FactoryOptions
+    ): Promise<Contracts.IMintManager>;
     deployContract(
       name: "IERC721AQueryable",
       signerOrOptions?: ethers.Signer | FactoryOptions
@@ -247,6 +273,11 @@ declare module "hardhat/types/runtime" {
       signerOrOptions?: ethers.Signer | FactoryOptions
     ): Promise<Contracts.IERC4906>;
     deployContract(
+      name: "IERC5192",
+      args: any[],
+      signerOrOptions?: ethers.Signer | FactoryOptions
+    ): Promise<Contracts.IERC5192>;
+    deployContract(
       name: "ICharacterEquipment",
       args: any[],
       signerOrOptions?: ethers.Signer | FactoryOptions
@@ -311,6 +342,11 @@ declare module "hardhat/types/runtime" {
       args: any[],
       signerOrOptions?: ethers.Signer | FactoryOptions
     ): Promise<Contracts.IL1NFT>;
+    deployContract(
+      name: "IMintManager",
+      args: any[],
+      signerOrOptions?: ethers.Signer | FactoryOptions
+    ): Promise<Contracts.IMintManager>;
     deployContract(
       name: "IERC721AQueryable",
       args: any[],

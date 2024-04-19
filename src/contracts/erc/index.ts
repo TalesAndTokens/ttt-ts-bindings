@@ -2,3 +2,4 @@
 /* tslint:disable */
 /* eslint-disable */
 export type { IERC4906 } from "./IERC4906";
+export type { IERC5192 } from "./IERC5192";

@@ -3,3 +3,4 @@
 /* eslint-disable */
 export type { IItemPackNFT } from "./IItemPackNFT";
 export type { IL1NFT } from "./IL1NFT";
+export type { IMintManager } from "./IMintManager";
