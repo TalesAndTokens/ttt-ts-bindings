@@ -25,7 +25,9 @@ export interface IMintManagerInterface extends Interface {
   getFunction(
     nameOrSignature:
       | "getBalanceBySeries"
+      | "getMintedCount"
       | "getMintedCountBySeries"
+      | "getSeriesIdByTokenId"
       | "mintBySeries"
   ): FunctionFragment;
 
@@ -34,7 +36,15 @@ export interface IMintManagerInterface extends Interface {
     values: [AddressLike, BigNumberish, BigNumberish]
   ): string;
   encodeFunctionData(
+    functionFragment: "getMintedCount",
+    values: [BigNumberish]
+  ): string;
+  encodeFunctionData(
     functionFragment: "getMintedCountBySeries",
+    values: [BigNumberish, BigNumberish]
+  ): string;
+  encodeFunctionData(
+    functionFragment: "getSeriesIdByTokenId",
     values: [BigNumberish, BigNumberish]
   ): string;
   encodeFunctionData(
@@ -47,7 +57,15 @@ export interface IMintManagerInterface extends Interface {
     data: BytesLike
   ): Result;
   decodeFunctionResult(
+    functionFragment: "getMintedCount",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(
     functionFragment: "getMintedCountBySeries",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(
+    functionFragment: "getSeriesIdByTokenId",
     data: BytesLike
   ): Result;
   decodeFunctionResult(
@@ -105,8 +123,20 @@ export interface IMintManager extends BaseContract {
     "view"
   >;
 
+  getMintedCount: TypedContractMethod<
+    [worldId: BigNumberish],
+    [bigint],
+    "view"
+  >;
+
   getMintedCountBySeries: TypedContractMethod<
     [worldId: BigNumberish, seriesId: BigNumberish],
+    [bigint],
+    "view"
+  >;
+
+  getSeriesIdByTokenId: TypedContractMethod<
+    [worldId: BigNumberish, tokenId: BigNumberish],
     [bigint],
     "view"
   >;
@@ -134,9 +164,19 @@ export interface IMintManager extends BaseContract {
     "view"
   >;
   getFunction(
+    nameOrSignature: "getMintedCount"
+  ): TypedContractMethod<[worldId: BigNumberish], [bigint], "view">;
+  getFunction(
     nameOrSignature: "getMintedCountBySeries"
   ): TypedContractMethod<
     [worldId: BigNumberish, seriesId: BigNumberish],
+    [bigint],
+    "view"
+  >;
+  getFunction(
+    nameOrSignature: "getSeriesIdByTokenId"
+  ): TypedContractMethod<
+    [worldId: BigNumberish, tokenId: BigNumberish],
     [bigint],
     "view"
   >;
