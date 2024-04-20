@@ -45,6 +45,25 @@ const _abi = [
         name: "worldId",
         type: "uint256",
       },
+    ],
+    name: "getMintedCount",
+    outputs: [
+      {
+        internalType: "uint256",
+        name: "",
+        type: "uint256",
+      },
+    ],
+    stateMutability: "view",
+    type: "function",
+  },
+  {
+    inputs: [
+      {
+        internalType: "uint256",
+        name: "worldId",
+        type: "uint256",
+      },
       {
         internalType: "uint64",
         name: "seriesId",
@@ -52,6 +71,30 @@ const _abi = [
       },
     ],
     name: "getMintedCountBySeries",
+    outputs: [
+      {
+        internalType: "uint256",
+        name: "",
+        type: "uint256",
+      },
+    ],
+    stateMutability: "view",
+    type: "function",
+  },
+  {
+    inputs: [
+      {
+        internalType: "uint256",
+        name: "worldId",
+        type: "uint256",
+      },
+      {
+        internalType: "uint256",
+        name: "tokenId",
+        type: "uint256",
+      },
+    ],
+    name: "getSeriesIdByTokenId",
     outputs: [
       {
         internalType: "uint256",
